@@ -1,5 +1,9 @@
 https://gitlab.com/thomas3081/nvim
 
+## 2025-10-27 09:14:23
+
+lualine_a -> 改变状态 没有其他方法了吗
+
 ## 2025-03-31 08:36:58
 
 gitsign

@@ -18,7 +18,7 @@ local showStatus = function(status)
 		modeName = OriModeName
 	end, 1000)
 	modeName = OriModeName .. ":" .. status .. ' '
-	mode:update_status()
+	mode.update_status()
 end
 
 local emit_event = function(action, link, info, callback)
@@ -340,17 +340,17 @@ local mappings = {
 	},
 }
 
-mode = Mode:new(function()
+mode = Mode(function()
 	return modeName
 end, mappings)
 
 M.toggle = function()
-	if mode.is_run then
+	if mode.is_run() then
 		vim.o.timeoutlen = 300
-		mode:exit()
+		mode.exit()
 	else
 		vim.o.timeoutlen = 100
-		mode:enter()
+		mode.enter()
 	end
 end
 
