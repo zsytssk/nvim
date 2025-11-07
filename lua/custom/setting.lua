@@ -36,3 +36,15 @@ vim.o.termguicolors = true
 
 vim.opt.hlsearch = true
 vim.opt.incsearch = true
+
+vim.g.clipboard = {
+  name = 'wl-clipboard',
+  copy = {
+    ['+'] = 'wl-copy',
+    ['*'] = 'wl-copy',
+  },
+  paste = {
+    ['+'] = 'wl-paste',
+    ['*'] = 'wl-paste',
+  },
+}
