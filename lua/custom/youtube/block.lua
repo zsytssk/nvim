@@ -2,14 +2,14 @@ local tb = require("libs.table")
 
 local M = {}
 
-local function is_time_contain(time1, time2)
+local function is_time_overlap(time1, time2)
 	if #time1 < 2 or #time2 < 2 then
 		return false
 	end
-	if time1[1] <= time2[1] and time1[2] >= time2[2] then
-		return true
-	end
+	return math.abs(time2[2] - time1[1]) < (time1[2] - time1[1] + time2[2] - time2[1])
 end
+
+
 
 local function get_content_seconds(line_str)
 	local time_str = string.match(line_str, "%((.-)%)")
@@ -33,7 +33,7 @@ local function find_match(line_num, line_info, block)
 			goto continue
 		end
 
-		if is_time_contain(cur_time, item.time) or is_time_contain(item.time, cur_time) then
+		if is_time_overlap(cur_time, item.time) then
 			table.insert(findKeys, key)
 		end
 
@@ -109,7 +109,7 @@ M.get_block = function()
 				table.sort(matchKeys, function(a, b)
 					return a < b
 				end)
-				item.matchKeys = table.concat(matchKeys, ", ")
+				item.matchKeys = matchKeys
 			end
 		end
 	end
@@ -144,7 +144,7 @@ M.get_match_items = function(line_info, block)
 
 	local list = {}
 	for line, item in pairs(block) do
-		if item.matchKeys == line_info.matchKeys then
+		if tb.hasIntersection(item.matchKeys, line_info.matchKeys) then
 			table.insert(list, line)
 		end
 	end
