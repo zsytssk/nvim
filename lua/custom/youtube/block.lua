@@ -6,7 +6,9 @@ local function is_time_overlap(time1, time2)
 	if #time1 < 2 or #time2 < 2 then
 		return false
 	end
-	return math.abs(time2[2] - time1[1]) < (time1[2] - time1[1] + time2[2] - time2[1])
+	local dist1 = math.max(time2[2], time1[2]) - math.min(time2[1], time1[1])
+	local dist2 = time1[2] - time1[1] + time2[2] - time2[1]
+	return dist1 < dist2
 end
 
 
