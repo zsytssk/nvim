@@ -61,7 +61,7 @@ local get_current_state = function(callback)
 end
 
 local video_loop = function()
-	showStatus("️🔄")
+	showStatus("️▶️")
 	local current_line = vim.fn.line(".")
 	local info = block.get_block()
 	local link = block.get_link(info)
@@ -78,7 +78,7 @@ local video_loop = function()
 end
 
 local video_list_loop = function(type)
-	showStatus("️🔄")
+	showStatus("️▶️")
 	local count = vim.v.count
 	if count == 0 then
 		count = 3

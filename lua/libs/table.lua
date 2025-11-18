@@ -1,5 +1,12 @@
 local M = {}
 
+M.extend = function(base, extra)
+  local t = {}
+  for k, v in pairs(base) do t[k] = v end
+  for k, v in pairs(extra) do t[k] = v end
+  return t
+end
+
 M.len = function(ta)
   local count = 0
   for _ in pairs(ta) do
@@ -25,7 +32,7 @@ M.findIndex = function(t, item)
   return nil
 end
 
-M.dulplicate = function(tab)
+M.duplicate = function(tab)
   local t2 = {}
   local len = M.len(tab)
   for k, v in pairs(tab) do
