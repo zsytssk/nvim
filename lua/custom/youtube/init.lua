@@ -5,6 +5,7 @@ local utils = require("custom.utils")
 local Mode = require("libs.mode")
 local tb = require("libs.table")
 local set_multiline_virt_text = require("libs.vim").set_multiline_virt_text
+local set_multiline_virt_text2 = require("libs.vim").set_multiline_virt_text2
 local OriModeName = "YT"
 local modeName = "YT"
 -- @type Mode
@@ -274,12 +275,53 @@ local toggle_hide_words = function()
 			goto continue
 		end
 
-		local line = string.rep("*", #item.content)
-		set_multiline_virt_text(0, ns_id, tonumber(key) - 1, line, "Normal")
+		-- local line = string.rep("*", #item.content)
+		-- set_multiline_virt_text(0, ns_id, tonumber(key) - 1, line, "Normal")
+
+		local arr = {}
+		local start = 0;
+		for start_pos, _, end_pos in item.content:gmatch("()%[(.-)%]()") do
+			table.insert(arr, { start_pos = start, end_pos = start_pos - 1, replace = true })
+			table.insert(arr, { start_pos = start_pos - 1, end_pos = end_pos - 1, replace = false })
+			start = end_pos - 1
+		end
+		table.insert(arr, { start_pos = start, end_pos = #item.content, replace = true })
+
+		for i, item in ipairs(arr) do
+			if item.replace == false then
+				goto continue
+			end
+			local line = string.rep("*", item.end_pos - item.start_pos)
+			set_multiline_virt_text2(0, ns_id, tonumber(key) - 1, line, "Normal", item.start_pos)
+			::continue::
+		end
 		::continue::
 	end
 	flag = true
 end
+
+local copy_imp_words = function()
+	local info = block.get_block()
+	local arr = {}
+	for key, item in pairs(info) do
+		if item.type ~= 'sentence' then
+			goto continue
+		end
+
+		local line_words = {}
+		for _1, content, _2 in item.content:gmatch("()%[(.-)%]()") do
+			table.insert(line_words, content)
+		end
+		if #line_words == 0 then
+			goto continue
+		end
+		table.insert(arr, table.concat(line_words, ' '))
+		::continue::
+	end
+	local str = table.concat(arr, '\n')
+	vim.fn.setreg("+", str)
+end
+
 
 local test = function()
 	print("hello")
@@ -310,7 +352,7 @@ local mappings = {
 	["J"] = { play_back, "play back" },
 	["L"] = { play_forward, "play forward" },
 	-- ["<C-C>"] = { copy_time, "copy time" },
-	["<C-S-M-c>"] = { copy_url, "copy url" },
+	["<C-S-M-c>"] = { copy_imp_words, "copy imp words" },
 	["<C-M-C>"] = { copy_sentence, "copy time" },
 	["<C-V>"] = { paste_time, "paste time" },
 	["<C-M-V>"] = { paste_end_time, "paste end time" },

@@ -11,8 +11,6 @@ local function is_time_overlap(time1, time2)
 	return dist1 < dist2
 end
 
-
-
 local function get_content_seconds(line_str)
 	local time_str = string.match(line_str, "%((.-)%)")
 	if time_str == nil then
