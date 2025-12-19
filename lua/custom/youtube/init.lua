@@ -301,9 +301,15 @@ local toggle_hide_words = function()
 end
 
 local copy_imp_words = function()
-	local info = block.get_block()
+	showStatus("️📋")
+	local current_line = vim.fn.line(".")
+	local list = block.get_group(current_line)
+	if list == nil then
+		return
+	end
 	local arr = {}
-	for key, item in pairs(info) do
+	for _, line in ipairs(list) do
+		local item = line.item
 		if item.type ~= 'sentence' then
 			goto continue
 		end
