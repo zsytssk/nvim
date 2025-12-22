@@ -263,7 +263,7 @@ end
 
 local ns_id = vim.api.nvim_create_namespace("english_hide_words")
 local flag = false
-local toggle_hide_words = function()
+local toggle_hide_words_all = function()
 	if flag then
 		vim.api.nvim_buf_clear_namespace(0, ns_id, 0, -1)
 		flag = false
@@ -275,17 +275,39 @@ local toggle_hide_words = function()
 			goto continue
 		end
 
-		-- local line = string.rep("*", #item.content)
-		-- set_multiline_virt_text(0, ns_id, tonumber(key) - 1, line, "Normal")
+		local line = string.rep("*", #item.content)
+		set_multiline_virt_text(0, ns_id, tonumber(key) - 1, line, "Normal")
+
+		::continue::
+	end
+	flag = true
+end
+
+local toggle_hide_words = function()
+	vim.api.nvim_buf_clear_namespace(0, ns_id, 0, -1)
+	flag = not flag
+	local info = block.get_block()
+	for key, item in pairs(info) do
+		if item.type ~= 'sentence' then
+			goto continue
+		end
 
 		local arr = {}
 		local start = 0;
-		for start_pos, _, end_pos in item.content:gmatch("()%[(.-)%]()") do
-			table.insert(arr, { start_pos = start, end_pos = start_pos - 1, replace = true })
-			table.insert(arr, { start_pos = start_pos - 1, end_pos = end_pos - 1, replace = false })
-			start = end_pos - 1
+		if flag then
+			for start_pos, _, end_pos in item.content:gmatch("()%[(.-)%]()") do
+				table.insert(arr, { start_pos = start, end_pos = start_pos - 1, replace = flag })
+				table.insert(arr, { start_pos = start_pos - 1, end_pos = end_pos - 1, replace = not flag })
+				start = end_pos - 1
+			end
+		else
+			for start_pos, _, end_pos in item.content:gmatch("()%[(.-)%]()") do
+				table.insert(arr, { start_pos = start, end_pos = start_pos, replace = flag })
+				table.insert(arr, { start_pos = start_pos, end_pos = end_pos - 2, replace = not flag })
+				start = end_pos - 2
+			end
 		end
-		table.insert(arr, { start_pos = start, end_pos = #item.content, replace = true })
+		table.insert(arr, { start_pos = start, end_pos = #item.content, replace = flag })
 
 		for i, item in ipairs(arr) do
 			if item.replace == false then
@@ -297,7 +319,6 @@ local toggle_hide_words = function()
 		end
 		::continue::
 	end
-	flag = true
 end
 
 local copy_imp_words = function()
@@ -339,6 +360,7 @@ local mappings = {
 	["<M-j>"] = { video_loop, "video loop" },
 	-- ["<C-M-j>"] = { video_jump, "video jump" },
 	["<M-t>"] = { toggle_hide_words, "toggle hide words" },
+	["<C-M-t>"] = { toggle_hide_words_all, "toggle hide words" },
 	-- ["<C-M-t>"] = { test, "youtube test" },
 	["<C-M-j>"] = { function()
 		video_list_loop('start')
@@ -394,10 +416,10 @@ end, mappings)
 
 M.toggle = function()
 	if mode.is_run() then
-		vim.o.timeoutlen = 300
+		-- vim.o.timeoutlen = 300
 		mode.exit()
 	else
-		vim.o.timeoutlen = 100
+		-- vim.o.timeoutlen = 100
 		mode.enter()
 	end
 end
