@@ -172,6 +172,15 @@ local copy_url = function()
 	end)
 end
 
+local switch_history = function(direction)
+	if direction == 'prev' then
+		showStatus("️⏪")
+	else
+		showStatus("️⏪")
+	end
+	emit_event("history", direction)
+end
+
 local update_line_time = function(line_num, line_info)
 	local pre_line = line_num - 1 -- Lua 索引从 0 开始
 	local line_content = vim.api.nvim_buf_get_lines(0, pre_line, pre_line + 1, false)[1]
@@ -381,6 +390,7 @@ local mappings = {
 	["L"] = { play_forward, "play forward" },
 	-- ["<C-C>"] = { copy_time, "copy time" },
 	["<C-S-M-c>"] = { copy_imp_words, "copy imp words" },
+	["<C-S-M-v>"] = { copy_url, "copy imp words" },
 	["<C-M-C>"] = { copy_sentence, "copy time" },
 	["<C-V>"] = { paste_time, "paste time" },
 	["<C-M-V>"] = { paste_end_time, "paste end time" },
@@ -393,6 +403,18 @@ local mappings = {
 	["<M-Down>"] = {
 		function()
 			switch_time("start", -1)
+		end,
+		"reduce start time",
+	},
+	["<M-Left>"] = {
+		function()
+			switch_history("prev")
+		end,
+		"add start time",
+	},
+	["<M-right>"] = {
+		function()
+			switch_history("next")
 		end,
 		"reduce start time",
 	},
