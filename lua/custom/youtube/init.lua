@@ -317,7 +317,6 @@ local toggle_hide_words = function()
 			end
 		end
 		table.insert(arr, { start_pos = start, end_pos = #item.content, replace = flag })
-
 		for i, item in ipairs(arr) do
 			if item.replace == false then
 				goto continue
