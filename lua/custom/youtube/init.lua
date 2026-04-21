@@ -359,7 +359,8 @@ end
 
 
 local test = function()
-	print("hello")
+	local info = block.get_block()
+	print(vim.inspect(info))
 end
 
 local M = {}
@@ -369,7 +370,7 @@ local mappings = {
 	-- ["<C-M-j>"] = { video_jump, "video jump" },
 	["<M-t>"] = { toggle_hide_words, "toggle hide words" },
 	["<C-M-t>"] = { toggle_hide_words_all, "toggle hide words" },
-	-- ["<C-M-t>"] = { test, "youtube test" },
+	["<C-M-y>"] = { test, "youtube test" },
 	["<C-M-j>"] = { function()
 		video_list_loop('start')
 	end, "video list loop" },
