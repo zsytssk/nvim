@@ -1,14 +1,37 @@
+---@diagnostic disable: missing-fields
+---@class LinkItem
+---@field content string
+---@field link string
+---@field type "link"
+---@field group integer
+
+---@class SentenceItem
+---@field content string
+---@field type "sentence"
+---@field time integer[]          -- 时间范围，可能只有一个元素
+---@field group integer
+---@field link string
+---@field matchKeys integer[]|nil
+
+---@alias BlockItem LinkItem|SentenceItem
+---@alias Block table<integer, BlockItem>
+
+---@type { hasIntersection: fun(t: table, other: table): boolean }
 local tb = require("libs.table")
 
 local M = {}
 
+---@param url string
+---@return boolean
 local function is_match_url(url)
 	local pattern = "https?://[%w%-%._~:/%?#%[%]@!$&'()*+,;=]+"
-
 	local match = string.match(url, pattern)
 	return match ~= nil
 end
 
+---@param block table<any, any>
+---@return integer first
+---@return integer last
 local function get_block_range(block)
 	local keys = {}
 	for k, _ in pairs(block) do
@@ -16,12 +39,19 @@ local function get_block_range(block)
 	end
 	table.sort(keys)
 
+	if #keys == 0 then
+		return 0, 0
+	end
+
 	local first = keys[1]
 	local last  = keys[#keys]
 
 	return tonumber(first), tonumber(last)
 end
 
+---@param time1 integer[]
+---@param time2 integer[]
+---@return boolean
 local function is_time_overlap(time1, time2)
 	if #time1 < 2 or #time2 < 2 then
 		return false
@@ -31,17 +61,22 @@ local function is_time_overlap(time1, time2)
 	return dist1 < dist2
 end
 
+---@param line_str string
+---@return integer[]
 local function get_content_seconds(line_str)
 	local time_str = string.match(line_str, "%((.-)%)")
 	if time_str == nil then
 		return {}
 	end
-	-- local start_time, end_time = string.match(time_str, "(%d+)-(%d+)")
 	local start_time, end_time = string.match(time_str, "([^-)]+)-([^-)]+)")
 	start_time = start_time or tonumber(time_str)
 	return { tonumber(start_time), tonumber(end_time) }
 end
 
+---@param line_num integer
+---@param line_info SentenceItem
+---@param block Block
+---@return integer[]|nil
 local function find_match(line_num, line_info, block)
 	local cur_time = line_info.time
 	if line_info.type == 'link' or cur_time == nil then
@@ -63,13 +98,12 @@ local function find_match(line_num, line_info, block)
 	return findKeys
 end
 
-M.get_raw_block = function()
+---@return table<integer, string>
+function M.get_raw_block()
 	local strMap = {}
-	local total_lines = vim.api.nvim_buf_line_count(0) -- 获取当前 buffer 的总行数
-	local current_line = vim.fn.line(".")           -- 获取当前光标所在行
+	local total_lines = vim.api.nvim_buf_line_count(0)
+	local current_line = vim.fn.line(".")
 
-
-	-- 向上查找目标行（以 "##" 开头或者文件开头）
 	for line = current_line, 1, -1 do
 		local content = vim.fn.getline(line)
 		if vim.startswith(content, "##") or line == 0 then
@@ -81,9 +115,8 @@ M.get_raw_block = function()
 		end
 	end
 
-	-- 向下查找目标行（以 "##" 开头或者文件结尾）
 	for line = current_line, total_lines + 1 do
-		local content = vim.fn.getline(line) -- 获取该行内容
+		local content = vim.fn.getline(line)
 		if vim.startswith(content, "##") or line == total_lines + 1 then
 			break
 		else
@@ -96,14 +129,14 @@ M.get_raw_block = function()
 	return strMap
 end
 
-M.get_block = function()
+---@return Block
+function M.get_block()
 	local strMap = M.get_raw_block()
 	local block = {}
 	local group = 0
 
 	local cur_link = ''
 	local start_key, end_key = get_block_range(strMap)
-
 
 	for key = start_key, end_key do
 		local value = strMap[key]
@@ -146,7 +179,9 @@ M.get_block = function()
 	return block
 end
 
-M.get_group = function(line_num)
+---@param line_num integer
+---@return {line: integer, item: BlockItem}[]|nil
+function M.get_group(line_num)
 	local block = M.get_block()
 	local line_info = block[line_num]
 	if line_info.type ~= 'sentence' then
@@ -166,7 +201,10 @@ M.get_group = function(line_num)
 	return list
 end
 
-M.get_match_items = function(line_info, block)
+---@param line_info SentenceItem
+---@param block Block
+---@return integer[]|nil
+function M.get_match_items(line_info, block)
 	if line_info.type ~= 'sentence' then
 		return
 	end
@@ -185,7 +223,10 @@ M.get_match_items = function(line_info, block)
 	return list
 end
 
-M.get_link = function(block, line)
+---@param block Block
+---@param line integer|nil
+---@return string|nil
+function M.get_link(block, line)
 	if line == nil then
 		line = vim.fn.line(".")
 	end
@@ -208,11 +249,6 @@ M.get_link = function(block, line)
 	end
 
 	return nil
-	-- for _, item in pairs(block) do
-	-- 	if item.type == "link" then
-	-- 		return item.content
-	-- 	end
-	-- end
 end
 
 return M
