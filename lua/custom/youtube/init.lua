@@ -65,7 +65,7 @@ local video_loop = function()
 	showStatus("️▶️")
 	local current_line = vim.fn.line(".")
 	local info = block.get_block()
-	local link = block.get_link(info)
+	local link = block.get_link(info, current_line)
 	local time_scope = info[current_line].time
 	if time_scope == nil or #time_scope < 1 then
 		return
@@ -90,7 +90,7 @@ local video_list_loop = function(type)
 	if list == nil then
 		return
 	end
-	local link = block.get_link(info)
+	local link = block.get_link(info, current_line)
 	local time_list = {}
 	local cur_index = 0
 	for index, item in ipairs(list) do
@@ -359,8 +359,14 @@ end
 
 
 local test = function()
-	local info = block.get_block()
-	print(vim.inspect(info))
+	-- local info = block.get_block()
+	-- print(vim.inspect(info))
+	-- local pattern = "https?://[%w%-%._~:/%?#%[%]@!$&'()*+,;=]+"
+	-- local url = "htp://test.org"
+
+	-- local match = string.match(url, pattern)
+	-- print(match)
+	toggle_pause()
 end
 
 local M = {}

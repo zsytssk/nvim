@@ -2,6 +2,26 @@ local tb = require("libs.table")
 
 local M = {}
 
+local function is_match_url(url)
+	local pattern = "https?://[%w%-%._~:/%?#%[%]@!$&'()*+,;=]+"
+
+	local match = string.match(url, pattern)
+	return match ~= nil
+end
+
+local function get_block_range(block)
+	local keys = {}
+	for k, _ in pairs(block) do
+		table.insert(keys, k)
+	end
+	table.sort(keys)
+
+	local first = keys[1]
+	local last  = keys[#keys]
+
+	return tonumber(first), tonumber(last)
+end
+
 local function is_time_overlap(time1, time2)
 	if #time1 < 2 or #time2 < 2 then
 		return false
@@ -29,7 +49,7 @@ local function find_match(line_num, line_info, block)
 	end
 	local findKeys = {}
 	for key, item in pairs(block) do
-		if key == line_num or item.time == nil then
+		if key == line_num or item.time == nil or item.link ~= line_info.link then
 			goto continue
 		end
 
@@ -43,13 +63,12 @@ local function find_match(line_num, line_info, block)
 	return findKeys
 end
 
-M.get_block = function()
+M.get_raw_block = function()
 	local strMap = {}
 	local total_lines = vim.api.nvim_buf_line_count(0) -- 获取当前 buffer 的总行数
 	local current_line = vim.fn.line(".")           -- 获取当前光标所在行
 
-	local startIndex = current_line
-	local endIndex = current_line
+
 	-- 向上查找目标行（以 "##" 开头或者文件开头）
 	for line = current_line, 1, -1 do
 		local content = vim.fn.getline(line)
@@ -58,7 +77,6 @@ M.get_block = function()
 		else
 			if content ~= "" then
 				strMap[line] = content
-				startIndex = line
 			end
 		end
 	end
@@ -71,33 +89,44 @@ M.get_block = function()
 		else
 			if content ~= "" then
 				strMap[line] = content
-				endIndex = line
 			end
 		end
 	end
 
+	return strMap
+end
+
+M.get_block = function()
+	local strMap = M.get_raw_block()
 	local block = {}
 	local group = 0
-	for key = startIndex, endIndex do
+
+	local cur_link = ''
+	local start_key, end_key = get_block_range(strMap)
+
+
+	for key = start_key, end_key do
 		local value = strMap[key]
 		if value == nil then
 			goto continue
 		end
-
 		if value == "---" then
 			group = group + 1
-		else
-			if group == 0 then
-				block[key] = { content = value, type = 'link', group = group }
-			else
-				block[key] = {
-					content = string.gsub(value, "%(.-%)$", ""),
-					type = "sentence",
-					time = get_content_seconds(value),
-					group = group
-				}
-			end
+			goto continue
 		end
+		if is_match_url(value) then
+			block[key] = { content = value, link = value, type = 'link', group = group }
+			cur_link = value
+			goto continue
+		end
+
+		block[key] = {
+			content = string.gsub(value, "%(.-%)$", ""),
+			type = "sentence",
+			time = get_content_seconds(value),
+			group = group,
+			link = cur_link,
+		}
 		::continue::
 	end
 
@@ -156,12 +185,34 @@ M.get_match_items = function(line_info, block)
 	return list
 end
 
-M.get_link = function(block)
-	for _, item in pairs(block) do
-		if item.type == "link" then
+M.get_link = function(block, line)
+	if line == nil then
+		line = vim.fn.line(".")
+	end
+	if (block[line] ~= nil and block[line].link ~= nil) then
+		return block[line].link
+	end
+
+	local start_key, end_key = get_block_range(block)
+	for key = end_key, start_key, -1 do
+		local item = block[key]
+		if key > line or item == nil then
+			goto continue
+		end
+
+		if item.type == 'link' then
 			return item.content
 		end
+
+		::continue::
 	end
+
+	return nil
+	-- for _, item in pairs(block) do
+	-- 	if item.type == "link" then
+	-- 		return item.content
+	-- 	end
+	-- end
 end
 
 return M
