@@ -30,8 +30,8 @@ local function is_match_url(url)
 end
 
 ---@param block table<any, any>
----@return integer first
----@return integer last
+---@return integer ?first
+---@return integer ?last
 local function get_block_range(block)
 	local keys = {}
 	for k, _ in pairs(block) do
