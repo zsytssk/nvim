@@ -4,13 +4,13 @@ local function get_text_area_width()
     return win_info.width - win_info.textoff
 end
 
-local function set_multiline_virt_text(bufnr, ns_id, line_num, text, highlight)
+local function set_multiline_virt_text(bufnr, ns_id, line_num, text, highlight, start_pos)
     local win_width = get_text_area_width()
     local line_width = vim.fn.strdisplaywidth(text)
 
     -- 计算需要多少行来显示
     local display_lines = math.ceil(line_width / win_width)
-    local start_col = 0
+    local start_col = start_pos or 0
     for i = 0, display_lines - 1 do
         local display_text = text:sub(start_col + 1, start_col + win_width + 1)
         vim.api.nvim_buf_set_extmark(bufnr, ns_id, line_num, start_col, {
@@ -40,7 +40,6 @@ local function set_multiline_virt_text2(bufnr, ns_id, line_num, text, highlight,
         if start_col > end_pos then
             break
         end
-
 
         local start_index = math.max(start_pos, start_col)
         local end_index = math.min(start_col + win_width, end_pos)

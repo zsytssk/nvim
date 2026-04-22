@@ -231,6 +231,7 @@ local sentence_jump = function()
 	local info = block.get_block()
 	local line_num = vim.fn.line(".")
 	local line_info = info[line_num]
+	---@cast line_info SentenceItem
 	if line_info.matchKeys == nil then
 		return
 	end
@@ -283,10 +284,12 @@ local toggle_hide_words_all = function()
 		if item.type ~= 'sentence' then
 			goto continue
 		end
-
+		local start = 0
+		if not item.content:match("^[A-Za-z]") then
+			start = 2
+		end
 		local line = string.rep("*", #item.content)
-		set_multiline_virt_text(0, ns_id, tonumber(key) - 1, line, "Normal")
-
+		set_multiline_virt_text(0, ns_id, tonumber(key) - 1, line, "Normal", start)
 		::continue::
 	end
 	flag = true
@@ -303,6 +306,9 @@ local toggle_hide_words = function()
 
 		local arr = {}
 		local start = 0;
+		if not item.content:match("^[A-Za-z]") then
+			start = 2
+		end
 		if flag then
 			for start_pos, _, end_pos in item.content:gmatch("()%[(.-)%]()") do
 				table.insert(arr, { start_pos = start, end_pos = start_pos - 1, replace = flag })

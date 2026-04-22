@@ -205,10 +205,6 @@ end
 ---@param block Block
 ---@return integer[]|nil
 function M.get_match_items(line_info, block)
-	if line_info.type ~= 'sentence' then
-		return
-	end
-
 	local list = {}
 	for line, item in pairs(block) do
 		if tb.hasIntersection(item.matchKeys, line_info.matchKeys) then
