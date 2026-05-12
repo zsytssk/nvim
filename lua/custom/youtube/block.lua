@@ -10,6 +10,7 @@
 ---@field type "sentence"
 ---@field time integer[]          -- 时间范围，可能只有一个元素
 ---@field group integer
+---@field isImp boolean
 ---@field link string
 ---@field matchKeys integer[]|nil
 
@@ -27,6 +28,15 @@ local function is_match_url(url)
 	local pattern = "https?://[%w%-%._~:/%?#%[%]@!$&'()*+,;=]+"
 	local match = string.match(url, pattern)
 	return match ~= nil
+end
+
+---@param sentence string
+---@return boolean
+local function is_match_imp(sentence)
+	if string.match(sentence, "^%* ") then
+		return true
+	end
+	return false
 end
 
 ---@param block table<any, any>
@@ -159,6 +169,7 @@ function M.get_block()
 			time = get_content_seconds(value),
 			group = group,
 			link = cur_link,
+			isImp = is_match_imp(value)
 		}
 		::continue::
 	end
@@ -242,6 +253,44 @@ function M.get_link(block, line)
 		end
 
 		::continue::
+	end
+
+	return nil
+end
+
+function M.find_imp(tbl, startKey, direction)
+	direction = direction or "next" -- 补上默认值
+
+	-- 收集所有 imp 键
+	local imp_keys = {}
+	for k, v in pairs(tbl) do
+		if v and v.isImp then
+			table.insert(imp_keys, k)
+		end
+	end
+	if #imp_keys == 0 then return nil end
+
+	table.sort(imp_keys)
+
+	if direction == "next" then
+		for _, k in ipairs(imp_keys) do
+			if k > startKey then
+				return k, tbl[k]
+			end
+		end
+		-- 没找到更大的，返回最小的（循环回来）
+		local k = imp_keys[1]
+		return k, tbl[k]
+	elseif direction == "prev" then
+		for i = #imp_keys, 1, -1 do
+			local k = imp_keys[i]
+			if k < startKey then
+				return k, tbl[k]
+			end
+		end
+		-- 没找到更小的，返回最大的（循环回来）
+		local k = imp_keys[#imp_keys]
+		return k, tbl[k]
 	end
 
 	return nil

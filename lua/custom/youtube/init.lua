@@ -374,6 +374,15 @@ local test = function()
 	-- print(match)
 	toggle_pause()
 end
+local jump_imp = function(dir)
+	local info = block.get_block()
+	local current_line = vim.fn.line(".")
+	local next_imp_line = block.find_imp(info, current_line, dir)
+	if next_imp_line == nil then
+		return
+	end
+	vim.api.nvim_win_set_cursor(0, { next_imp_line, 0 })
+end
 
 local M = {}
 
@@ -383,16 +392,22 @@ local mappings = {
 	["<M-t>"] = { toggle_hide_words, "toggle hide words" },
 	["<C-M-t>"] = { toggle_hide_words_all, "toggle hide words" },
 	["<C-M-y>"] = { test, "youtube test" },
-	["<C-M-j>"] = { function()
+	["<C-S-M-j>"] = { function()
 		video_list_loop('start')
 	end, "video list loop" },
+	["<M-k>"] = { sentence_jump, "sentence jump" },
 	["<C-S-M-k>"] = {
 		function()
 			video_list_loop('current')
 		end,
 		"video list loop from",
 	},
-	["<M-k>"] = { sentence_jump, "sentence jump" },
+	["<C-M-j>"] = { function()
+		jump_imp()
+	end, "video loop" },
+	["<C-M-k>"] = { function()
+		jump_imp('prev')
+	end, "video loop" },
 	["<M-Space>"] = { toggle_pause, { buffer = true, desc = "(un)pause" } },
 	-- ['K'] = { toggle_pause, { buffer = true, desc = '(un)pause' } },
 	["C"] = { toggle_subtitle, "(un)subtitle" },
