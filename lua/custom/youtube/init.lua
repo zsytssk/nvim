@@ -285,7 +285,7 @@ local toggle_hide_words_all = function()
 			goto continue
 		end
 		local start = 0
-		if not item.content:match("^[A-Za-z]") then
+		if not item.content:match("^[A-Za-z%[]") then
 			start = 2
 		end
 		local line = string.rep("*", #item.content)
@@ -306,7 +306,7 @@ local toggle_hide_words = function()
 
 		local arr = {}
 		local start = 0;
-		if not item.content:match("^[A-Za-z]") then
+		if not item.content:match("^[A-Za-z%[]") then
 			start = 2
 		end
 		if flag then

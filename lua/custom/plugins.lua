@@ -211,17 +211,10 @@ return {
     opts = {},
   },
   {
-    'ThePrimeagen/harpoon',
+    'kylechui/nvim-surround',
     event = 'VeryLazy',
     config = function()
-      keymapTable 'nv' {
-        ['<leader>hh'] = { "<cmd>lua require('harpoon.ui').toggle_quick_menu()<CR>", 'harpoon open' },
-        ['<leader>ha'] = { "<cmd>lua require('harpoon.mark').add_file()<CR>", 'harpoon add file' },
-        ['<leader>h1'] = { "<cmd>lua require('harpoon.ui').nav_file(1)<CR>", 'harpoon nav_file 1' },
-        ['<leader>h2'] = { "<cmd>lua require('harpoon.ui').nav_file(2)<CR>", 'harpoon nav_file 2' },
-        ['<leader>h3'] = { "<cmd>lua require('harpoon.ui').nav_file(3)<CR>", 'harpoon nav_file 3' },
-        ['<leader>h4'] = { "<cmd>lua require('harpoon.ui').nav_file(4)<CR>", 'harpoon nav_file 4' },
-      }
+      require('nvim-surround').setup {}
     end,
   },
   {
