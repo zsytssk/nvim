@@ -159,7 +159,8 @@ local copy_sentence = function()
 	local line_num = vim.fn.line(".")
 	local line_info = info[line_num]
 	if line_info ~= nil and line_info.content then
-		vim.fn.setreg("+", "先翻译，再详细解释: " .. line_info.content)
+		local result = line_info.content:gsub("%[([^|]+)|[^%]]+%]", "%1")
+		vim.fn.setreg("+", "先翻译，再详细解释: " .. result)
 	end
 end
 
