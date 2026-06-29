@@ -159,7 +159,14 @@ local copy_sentence = function()
 	local line_num = vim.fn.line(".")
 	local line_info = info[line_num]
 	if line_info ~= nil and line_info.content then
-		local result = line_info.content:gsub("%[([^|]+)|[^%]]+%]", "%1")
+		local result = line_info.content:gsub("%[([^%]]*)%]", function(content)
+		-- 检查是否包含 |
+		if content:find("|") then
+			return content:match("([^|]+)|.*")  -- 取 | 前面的部分
+		else
+			return content  -- 没有 | 就返回内容（去掉括号）
+		end
+	end)
 		vim.fn.setreg("+", "先翻译，再详细解释: " .. result)
 	end
 end
