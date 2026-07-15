@@ -153,11 +153,8 @@ function M.get_block()
 		if value == nil then
 			goto continue
 		end
-		if value == "---" then
-			group = group + 1
-			goto continue
-		end
 		if is_match_url(value) then
+			group = group + 1
 			block[key] = { content = value, link = value, type = 'link', group = group }
 			cur_link = value
 			goto continue

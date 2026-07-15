@@ -93,16 +93,19 @@ local video_list_loop = function(type)
 	local link = block.get_link(info, current_line)
 	local time_list = {}
 	local cur_index = 0
-	for index, item in ipairs(list) do
+	for _, item in ipairs(list) do
 		local itemInfo = item.item
 		local line = item.line
 		local time = itemInfo.time
-		if type == 'current' and line == current_line then
-			cur_index = index - 1
+    	if itemInfo.type == 'link' then
+          goto continue
+		end
+		if type == 'current' and line < current_line then
+			cur_index = cur_index + 1
 		end
 		table.insert(time_list, time)
+		::continue::
 	end
-
 	emit_event("list_loop", link, { count = count, cur_index = cur_index, time_list = time_list })
 end
 
