@@ -75,12 +75,22 @@ end
 ---@return integer[]
 local function get_content_seconds(line_str)
 	local time_str = string.match(line_str, "%((.-)%)")
+	print(time_str)
 	if time_str == nil then
 		return {}
 	end
 	local start_time, end_time = string.match(time_str, "([^-)]+)-([^-)]+)")
 	start_time = start_time or tonumber(time_str)
-	return { tonumber(start_time), tonumber(end_time) }
+	if start_time and end_time then
+		return { tonumber(start_time), tonumber(end_time) }
+	end
+	local single_time = string.match(time_str, "([^-]+)")
+	if single_time then
+		return {
+			single_time
+		}
+	end
+	return {}
 end
 
 ---@param line_num integer

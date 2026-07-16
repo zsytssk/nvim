@@ -70,7 +70,6 @@ local video_loop = function()
 	if time_scope == nil or #time_scope < 1 then
 		return
 	end
-
 	if #time_scope == 1 then
 		emit_event("jump", link, { time = time_scope })
 		return
@@ -386,23 +385,29 @@ local test = function()
 	toggle_pause()
 end
 local jump_imp = function(dir)
-	local info = block.get_block()
-	local current_line = vim.fn.line(".")
-	local next_imp_line = block.find_imp(info, current_line, dir)
-	if next_imp_line == nil then
-		return
-	end
-	vim.api.nvim_win_set_cursor(0, { next_imp_line, 0 })
+    local info = block.get_block()
+    local current_line = vim.fn.line(".")
+    local next_imp_line = block.find_imp(info, current_line, dir)
+    if next_imp_line == nil then
+        return
+    end
+    vim.api.nvim_win_set_cursor(0, { next_imp_line, 0 })
+end
+
+local change_page_url = function()
+    local link = block.get_link(block.get_block())
+    emit_event("change_page_url", link, nil)
 end
 
 local M = {}
 
 local mappings = {
 	["<M-j>"] = { video_loop, "video loop" },
+	["<C-M-y>"] = { change_page_url, "change page url" },
 	-- ["<C-M-j>"] = { video_jump, "video jump" },
 	["<M-t>"] = { toggle_hide_words, "toggle hide words" },
 	["<C-M-t>"] = { toggle_hide_words_all, "toggle hide words" },
-	["<C-M-y>"] = { test, "youtube test" },
+	-- ["<C-M-y>"] = { test, "youtube test" },
 	["<C-S-M-j>"] = { function()
 		video_list_loop('start')
 	end, "video list loop" },
@@ -470,17 +475,17 @@ local mappings = {
 	},
 }
 
-mode = Mode(function()
+mode = Mode:new(function()
 	return modeName
 end, mappings)
 
 M.toggle = function()
-	if mode.is_run() then
-		-- vim.o.timeoutlen = 300
-		mode.exit()
+	if mode.is_run then
+		vim.o.timeoutlen = 300
+		mode:exit()
 	else
-		-- vim.o.timeoutlen = 100
-		mode.enter()
+		vim.o.timeoutlen = 100
+		mode:enter()
 	end
 end
 
