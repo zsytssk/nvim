@@ -17,12 +17,14 @@ libs.keymapTable 'int' {
   ['<A-S-`>'] = { require('custom.utils').open_external_term, 'open external terminal' },
   ['<C-`>'] = { require('custom.plugin_config.toggleterm').toggle_terminal, 'toggle terminal' },
   ['<C-s>'] = { '<cmd> w <CR>', 'save file' },
+  ['<C-q>'] = { require('custom.utils').toggle_qf, 'save file' },
 }
 
 libs.keymapTable 'n' {
   ['<Esc>'] = { '<cmd>:nohlsearch<CR>', 'clear search highlight' },
   ['<leader>sx'] = { '<cmd>source %<CR>', 'lua run current file' },
   ['<leader>x'] = { ':.lua<CR>', 'lua run current line' },
+  -- ['<leader>sq'] = { require('custom.utils').toggle_qf, 'toggle quick fix' },
   ['<leader>ef'] = { "<cmd> echo expand('%:p') <CR>", 'show current file name' },
   ['<leader>ew'] = { '<cmd> pwd <CR>', 'show current workspace' },
   ['<A-m>'] = { '<cmd> messages <CR>', 'toggle message panel' },

@@ -67,4 +67,22 @@ M.setTimeout = function(fn, time)
   end
 end
 
+M.toggle_qf = function ()
+  local windows = vim.fn.getwininfo()
+  local qf_exists = false
+  for _, win in pairs(windows) do
+    if win.quickfix == 1 then
+      qf_exists = true
+      break
+    end
+  end
+
+  -- 如果已打开则关闭，否则打开
+  if qf_exists then
+    vim.cmd('cclose')
+  else
+    vim.cmd('copen')
+  end
+end
+
 return M

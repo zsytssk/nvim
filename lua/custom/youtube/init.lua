@@ -1,6 +1,7 @@
 -- 在english.md中控制youtube视频播放
 -- nvim/lua -> curl -> trans -> tampermonkey -> youtube
 local block = require("custom.youtube.block")
+local quickSearch = require("custom.youtube.quickSearch")
 local utils = require("custom.utils")
 local Mode = require("libs.mode")
 local tb = require("libs.table")
@@ -403,6 +404,7 @@ local M = {}
 
 local mappings = {
 	["<M-j>"] = { video_loop, "video loop" },
+	["<M-s>"] = { quickSearch.grep_word_to_quickfix, "grep word to quickfix" },
 	["<C-M-y>"] = { change_page_url, "change page url" },
 	-- ["<C-M-j>"] = { video_jump, "video jump" },
 	["<M-t>"] = { toggle_hide_words, "toggle hide words" },
