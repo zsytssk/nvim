@@ -75,7 +75,6 @@ end
 ---@return integer[]
 local function get_content_seconds(line_str)
 	local time_str = string.match(line_str, "%((.-)%)")
-	print(time_str)
 	if time_str == nil then
 		return {}
 	end

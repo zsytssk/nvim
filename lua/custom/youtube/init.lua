@@ -97,8 +97,8 @@ local video_list_loop = function(type)
 		local itemInfo = item.item
 		local line = item.line
 		local time = itemInfo.time
-    	if itemInfo.type == 'link' then
-          goto continue
+		if itemInfo.type == 'link' then
+			goto continue
 		end
 		if type == 'current' and line < current_line then
 			cur_index = cur_index + 1
@@ -163,13 +163,13 @@ local copy_sentence = function()
 	local line_info = info[line_num]
 	if line_info ~= nil and line_info.content then
 		local result = line_info.content:gsub("%[([^%]]*)%]", function(content)
-		-- 检查是否包含 |
-		if content:find("|") then
-			return content:match("([^|]+)|.*")  -- 取 | 前面的部分
-		else
-			return content  -- 没有 | 就返回内容（去掉括号）
-		end
-	end)
+			-- 检查是否包含 |
+			if content:find("|") then
+				return content:match("([^|]+)|.*") -- 取 | 前面的部分
+			else
+				return content         -- 没有 | 就返回内容（去掉括号）
+			end
+		end)
 		vim.fn.setreg("+", "先翻译，再详细解释: " .. result)
 	end
 end
@@ -386,18 +386,18 @@ local test = function()
 	toggle_pause()
 end
 local jump_imp = function(dir)
-    local info = block.get_block()
-    local current_line = vim.fn.line(".")
-    local next_imp_line = block.find_imp(info, current_line, dir)
-    if next_imp_line == nil then
-        return
-    end
-    vim.api.nvim_win_set_cursor(0, { next_imp_line, 0 })
+	local info = block.get_block()
+	local current_line = vim.fn.line(".")
+	local next_imp_line = block.find_imp(info, current_line, dir)
+	if next_imp_line == nil then
+		return
+	end
+	vim.api.nvim_win_set_cursor(0, { next_imp_line, 0 })
 end
 
 local change_page_url = function()
-    local link = block.get_link(block.get_block())
-    emit_event("change_page_url", link, nil)
+	local link = block.get_link(block.get_block())
+	emit_event("change_page_url", link, nil)
 end
 
 local M = {}
@@ -420,13 +420,9 @@ local mappings = {
 		end,
 		"video list loop from",
 	},
-	["<C-M-j>"] = { function()
-		jump_imp()
-	end, "video loop" },
-	["<C-M-k>"] = { function()
-		jump_imp('prev')
-	end, "video loop" },
-	["<M-Space>"] = { toggle_pause, { buffer = true, desc = "(un)pause" } },
+	["<C-M-j>"] = { function() jump_imp() end, "video loop" },
+	["<C-M-k>"] = { function() jump_imp('prev') end, "video loop" },
+	["<M-Space>"] = { toggle_pause, "(un)pause" },
 	-- ['K'] = { toggle_pause, { buffer = true, desc = '(un)pause' } },
 	["C"] = { toggle_subtitle, "(un)subtitle" },
 	["<"] = { reduce_speed, "reduce speed" },
@@ -439,12 +435,7 @@ local mappings = {
 	["<C-M-C>"] = { copy_sentence, "copy time" },
 	["<C-V>"] = { paste_time, "paste time" },
 	["<C-M-V>"] = { paste_end_time, "paste end time" },
-	["<M-Up>"] = {
-		function()
-			switch_time("start", 1)
-		end,
-		"add start time",
-	},
+	["<M-Up>"] = { function() switch_time("start", 1) end, "add start time", },
 	["<M-Down>"] = {
 		function()
 			switch_time("start", -1)
