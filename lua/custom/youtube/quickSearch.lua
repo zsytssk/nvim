@@ -6,6 +6,8 @@ local function grep_word_to_quickfix()
         return
     end
 
+    word = "\\<" .. word
+
     -- 指定搜索的文件夹（可根据需要修改）
     local search_dir = vim.fn.expand('%:p:h')
 

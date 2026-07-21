@@ -167,7 +167,7 @@ local copy_sentence = function()
             if content:find("|") then
                 return content:match("([^|]+)|.*") -- 取 | 前面的部分
             else
-                return content         -- 没有 | 就返回内容（去掉括号）
+                return content                     -- 没有 | 就返回内容（去掉括号）
             end
         end)
         vim.fn.setreg("+", "先翻译，再详细解释: " .. result)
