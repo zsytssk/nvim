@@ -299,7 +299,7 @@ local toggle_hide_words_all = function()
         if not item.content:match("^[A-Za-z%[]") then
             start = 2
         end
-        local line = string.rep("*", vim.fn.strdisplaywidth(item.content))
+        local line = string.rep("*", #item.content)
         set_multiline_virt_text(0, ns_id, tonumber(key) - 1, line, "Normal", start)
         ::continue::
     end
@@ -322,29 +322,23 @@ local toggle_hide_words = function()
         end
         if flag then
             for start_pos, _, end_pos in item.content:gmatch("()%[(.-)%]()") do
-                table.insert(arr, { content = item.content, start_pos = start, end_pos = start_pos - 1, replace = flag })
-                table.insert(arr,
-                    { content = item.content, start_pos = start_pos, end_pos = end_pos - 1, replace = not flag })
+                table.insert(arr, { start_pos = start, end_pos = start_pos - 1, replace = flag })
+                table.insert(arr, { start_pos = start_pos - 1, end_pos = end_pos - 1, replace = not flag })
                 start = end_pos - 1
             end
         else
             for start_pos, _, end_pos in item.content:gmatch("()%[(.-)%]()") do
-                table.insert(arr, { content = item.content, start_pos = start, end_pos = start_pos, replace = flag })
-                table.insert(arr,
-                    { content = item.content, start_pos = start_pos, end_pos = end_pos - 2, replace = not flag })
+                table.insert(arr, { start_pos = start, end_pos = start_pos, replace = flag })
+                table.insert(arr, { start_pos = start_pos, end_pos = end_pos - 2, replace = not flag })
                 start = end_pos - 2
             end
         end
-        if start < #item.content then
-            table.insert(arr, { content = item.content, start_pos = start, end_pos = #item.content, replace = flag })
-        end
+        table.insert(arr, { start_pos = start, end_pos = #item.content, replace = flag })
         for i, item in ipairs(arr) do
             if item.replace == false then
                 goto continue
             end
-            local str = string.sub(item.content, item.start_pos + 1, item.end_pos)
-            local lettersSpace = vim.fn.strdisplaywidth(str)
-            local line = string.rep("*", lettersSpace)
+            local line = string.rep("*", item.end_pos - item.start_pos)
             set_multiline_virt_text2(0, ns_id, tonumber(key) - 1, line, "Normal", item.start_pos)
             ::continue::
         end
