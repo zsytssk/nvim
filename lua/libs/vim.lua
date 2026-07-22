@@ -45,6 +45,10 @@ local function set_multiline_virt_text2(bufnr, ns_id, line_num, text, highlight,
         local end_index = math.min(start_col + win_width, end_pos)
         local display_text = text:sub(0, end_index - start_index)
 
+        local text = vim.api.nvim_buf_get_text(bufnr, line_num, start_index, line_num, end_index, {})
+        print(text[1])
+        -- print(start_index, display_text)
+
         vim.api.nvim_buf_set_extmark(bufnr, ns_id, line_num, start_index, {
             virt_text = { { display_text, highlight } },
             virt_text_pos = "overlay",
