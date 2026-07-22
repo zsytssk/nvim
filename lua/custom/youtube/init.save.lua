@@ -299,7 +299,7 @@ local toggle_hide_words_all = function()
         if not item.content:match("^[A-Za-z%[]") then
             start = 2
         end
-        local line = string.rep("*", #item.content)
+        local line = string.rep("*", vim.fn.strdisplaywidth(item.content))
         set_multiline_virt_text(0, ns_id, tonumber(key) - 1, line, "Normal", start)
         ::continue::
     end
@@ -310,37 +310,45 @@ local toggle_hide_words = function()
     vim.api.nvim_buf_clear_namespace(0, ns_id, 0, -1)
     flag = not flag
     local info = block.get_block()
+
+    -- 提取重复的渲染逻辑为一个局部函数
+    local function add_hidden_segment(arr, str, start_pos)
+        local lettersSpace = vim.fn.strdisplaywidth(str)
+        table.insert(arr, { len = lettersSpace, start_pos = start_pos })
+    end
+
     for key, item in pairs(info) do
         if item.type ~= 'sentence' then
             goto continue
         end
 
         local arr = {}
-        local start = 0;
+        local start = 1;
         if not item.content:match("^[A-Za-z%[]") then
-            start = 2
+            start = 3
         end
-        if flag then
-            for start_pos, _, end_pos in item.content:gmatch("()%[(.-)%]()") do
-                table.insert(arr, { start_pos = start, end_pos = start_pos - 1, replace = flag })
-                table.insert(arr, { start_pos = start_pos - 1, end_pos = end_pos - 1, replace = not flag })
-                start = end_pos - 1
-            end
-        else
-            for start_pos, _, end_pos in item.content:gmatch("()%[(.-)%]()") do
-                table.insert(arr, { start_pos = start, end_pos = start_pos, replace = flag })
-                table.insert(arr, { start_pos = start_pos, end_pos = end_pos - 2, replace = not flag })
-                start = end_pos - 2
+        for start_pos, _, end_pos in item.content:gmatch("()%[(.-)%]()") do
+            if flag then
+                start_pos = start_pos + 1
+                end_pos = end_pos - 1
+                local str = string.sub(item.content, start_pos, end_pos - 1)
+                add_hidden_segment(arr, str, start_pos - 1)
+            else
+                start_pos = start_pos - 1
+                local str = string.sub(item.content, start, start_pos)
+                add_hidden_segment(arr, str, start - 1)
+                start = end_pos
             end
         end
-        table.insert(arr, { start_pos = start, end_pos = #item.content, replace = flag })
+
+        if not flag and start < #item.content then
+            local str = string.sub(item.content, start, #item.content)
+            add_hidden_segment(arr, str, start - 1)
+        end
+
         for i, item in ipairs(arr) do
-            if item.replace == false then
-                goto continue
-            end
-            local line = string.rep("*", item.end_pos - item.start_pos)
+            local line = string.rep("*", item.len)
             set_multiline_virt_text2(0, ns_id, tonumber(key) - 1, line, "Normal", item.start_pos)
-            ::continue::
         end
         ::continue::
     end

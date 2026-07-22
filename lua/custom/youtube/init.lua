@@ -311,43 +311,34 @@ local toggle_hide_words = function()
     flag = not flag
     local info = block.get_block()
     for key, item in pairs(info) do
-        if item.type ~= 'sentence' then
-            goto continue
-        end
+        if item.type ~= 'sentence' then goto continue end
 
-        local arr = {}
-        local start = 1;
-        if not item.content:match("^[A-Za-z%[]") then
-            start = 3
-        end
-        for start_pos, _, end_pos in item.content:gmatch("()%[(.-)%]()") do
+        local content = item.content
+        local row = tonumber(key) - 1
+        local ranges = {}
+        local start = content:match("^[A-Za-z%[]") and 1 or 3
+
+        for s, _, e in content:gmatch("()%[(.-)%]()") do
             if flag then
-                start_pos = start_pos + 1
-                end_pos = end_pos - 1
-                local str = string.sub(item.content, start_pos, end_pos - 1)
-                local lettersSpace = vim.fn.strdisplaywidth(str)
-                table.insert(arr,
-                    { len = lettersSpace, start_pos = start_pos - 1 })
+                s = s + 1
+                e = e - 1
+                table.insert(ranges, { s, e - 1 })
             else
-                start_pos = start_pos - 1
-                local str = string.sub(item.content, start, start_pos)
-                local lettersSpace = vim.fn.strdisplaywidth(str)
-                print(str, lettersSpace)
-                table.insert(arr, { len = lettersSpace, start_pos = start - 1 })
-                start = end_pos
+                s = s - 1
+                table.insert(ranges, { start, s })
+                start = e
             end
         end
-
-        if not flag and start < #item.content then
-            local str = string.sub(item.content, start, #item.content)
-            local lettersSpace = vim.fn.strdisplaywidth(str)
-            table.insert(arr, { len = lettersSpace, start_pos = start - 1 })
+        if not flag and start <= #content then
+            table.insert(ranges, { start, #content })
         end
 
-        for i, item in ipairs(arr) do
-            local line = string.rep("*", item.len)
-            set_multiline_virt_text2(0, ns_id, tonumber(key) - 1, line, "Normal", item.start_pos)
+        for _, r in ipairs(ranges) do
+            local text = string.sub(content, r[1], r[2])
+            local width = vim.fn.strdisplaywidth(text)
+            set_multiline_virt_text2(0, ns_id, row, string.rep("*", width), "Normal", r[1] - 1)
         end
+
         ::continue::
     end
 end
