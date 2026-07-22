@@ -20,7 +20,7 @@ local showStatus = function(status)
         modeName = OriModeName
     end, 1000)
     modeName = OriModeName .. ":" .. status .. ' '
-    mode.update_status()
+    mode:update_status()
 end
 
 local emit_event = function(action, link, info, callback)
@@ -49,6 +49,26 @@ local emit_event = function(action, link, info, callback)
                 end)
             end
         end
+    )
+end
+
+local emit_event_youdao = function(str)
+    if info == nil then
+        info = {}
+    end
+
+    local allInfo = vim.tbl_extend("force", {
+        type = "youdao",
+        str = str,
+    }, info)
+
+    local json = vim.fn.json_encode(allInfo)
+    vim.system(
+        {
+            "curl", "-s", "-X", "POST",
+            "-d", json,
+            "http://127.0.0.1:60829/send"
+        }
     )
 end
 
@@ -397,10 +417,17 @@ local change_page_url = function()
     emit_event("change_page_url", link, nil)
 end
 
+local youdao_pronounce = function()
+    local word = vim.fn.expand('<cword>')
+    print("hello")
+    emit_event_youdao(word)
+end
+
 local M = {}
 
 local mappings = {
     ["<M-j>"] = { video_loop, "video loop" },
+    ["<M-r>"] = { youdao_pronounce, "youdao pronounce" },
     ["<M-s>"] = { quickSearch.grep_word_to_quickfix, "grep word to quickfix" },
     ["<C-M-y>"] = { change_page_url, "change page url" },
     -- ["<C-M-j>"] = { video_jump, "video jump" },
