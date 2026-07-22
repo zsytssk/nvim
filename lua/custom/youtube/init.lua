@@ -316,37 +316,37 @@ local toggle_hide_words = function()
         end
 
         local arr = {}
-        local start = 0;
+        local start = 1;
         if not item.content:match("^[A-Za-z%[]") then
-            start = 2
+            start = 3
         end
-        if flag then
-            for start_pos, _, end_pos in item.content:gmatch("()%[(.-)%]()") do
-                table.insert(arr, { content = item.content, start_pos = start, end_pos = start_pos - 1, replace = flag })
+        for start_pos, _, end_pos in item.content:gmatch("()%[(.-)%]()") do
+            if flag then
+                start_pos = start_pos + 1
+                end_pos = end_pos - 1
+                local str = string.sub(item.content, start_pos, end_pos - 1)
+                local lettersSpace = vim.fn.strdisplaywidth(str)
                 table.insert(arr,
-                    { content = item.content, start_pos = start_pos, end_pos = end_pos - 1, replace = not flag })
-                start = end_pos - 1
-            end
-        else
-            for start_pos, _, end_pos in item.content:gmatch("()%[(.-)%]()") do
-                table.insert(arr, { content = item.content, start_pos = start, end_pos = start_pos, replace = flag })
-                table.insert(arr,
-                    { content = item.content, start_pos = start_pos, end_pos = end_pos - 2, replace = not flag })
-                start = end_pos - 2
+                    { len = lettersSpace, start_pos = start_pos - 1 })
+            else
+                start_pos = start_pos - 1
+                local str = string.sub(item.content, start, start_pos)
+                local lettersSpace = vim.fn.strdisplaywidth(str)
+                print(str, lettersSpace)
+                table.insert(arr, { len = lettersSpace, start_pos = start - 1 })
+                start = end_pos
             end
         end
-        if start < #item.content then
-            table.insert(arr, { content = item.content, start_pos = start, end_pos = #item.content, replace = flag })
-        end
-        for i, item in ipairs(arr) do
-            if item.replace == false then
-                goto continue
-            end
-            local str = string.sub(item.content, item.start_pos + 1, item.end_pos)
+
+        if not flag and start < #item.content then
+            local str = string.sub(item.content, start, #item.content)
             local lettersSpace = vim.fn.strdisplaywidth(str)
-            local line = string.rep("*", lettersSpace)
+            table.insert(arr, { len = lettersSpace, start_pos = start - 1 })
+        end
+
+        for i, item in ipairs(arr) do
+            local line = string.rep("*", item.len)
             set_multiline_virt_text2(0, ns_id, tonumber(key) - 1, line, "Normal", item.start_pos)
-            ::continue::
         end
         ::continue::
     end
