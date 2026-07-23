@@ -11,7 +11,6 @@ local function set_multiline_virt_text2(bufnr, ns_id, line_num, s_idx, e_idx)
   local text = vim.api.nvim_buf_get_text(bufnr, line_num, s_idx - 1, line_num, e_idx, {})[1]
   local display_width = vim.api.nvim_strwidth(text)
   local display_text = string.rep('*', display_width)
-  print(text)
   vim.api.nvim_buf_set_extmark(bufnr, ns_id, line_num, s_idx - 1, {
     virt_text = { { display_text, "Normal" } },
     virt_text_pos = "overlay",
