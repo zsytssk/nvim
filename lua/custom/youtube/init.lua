@@ -176,6 +176,11 @@ local toggle_pause = function()
     emit_event("toggle_pause", link)
 end
 
+local toggle_pause_all = function()
+    showStatus("⏸")
+    emit_event("toggle_pause", '')
+end
+
 local copy_sentence = function()
     showStatus("️📋")
     local info = block.get_block()
@@ -447,6 +452,7 @@ local mappings = {
     ["<C-M-j>"] = { function() jump_imp() end, "video loop" },
     ["<C-M-k>"] = { function() jump_imp('prev') end, "video loop" },
     ["<M-Space>"] = { toggle_pause, "(un)pause" },
+    ["<C-M-Space>"] = { toggle_pause_all, "(un)pause" },
     -- ['K'] = { toggle_pause, { buffer = true, desc = '(un)pause' } },
     ["C"] = { toggle_subtitle, "(un)subtitle" },
     ["<"] = { reduce_speed, "reduce speed" },

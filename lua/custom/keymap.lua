@@ -12,12 +12,13 @@ vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagn
 vim.api.nvim_set_keymap('i', '<C-Space>', '<nop>', { noremap = true, silent = true })
 
 libs.keymapTable 'int' {
+  ['<A-q>'] = { require('custom.utils').toggle_qf, 'toggle youtube control' },
   ['<A-y>'] = { require('custom.youtube').toggle, 'toggle youtube control' },
   ['<C-S-i>'] = { require('custom.utils').insert_cur_time, 'insert time' },
   ['<A-S-`>'] = { require('custom.utils').open_external_term, 'open external terminal' },
   ['<C-`>'] = { require('custom.plugin_config.toggleterm').toggle_terminal, 'toggle terminal' },
   ['<C-s>'] = { '<cmd> w <CR>', 'save file' },
-  ['<C-q>'] = { require('custom.utils').toggle_qf, 'save file' },
+  -- ['<C-q>'] = { require('custom.utils').toggle_qf, 'save file' },
 }
 
 libs.keymapTable 'n' {
