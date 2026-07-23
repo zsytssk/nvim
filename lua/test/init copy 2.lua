@@ -40,13 +40,13 @@ local function get_line_wrap_idx(bufnr, line_num)
   return list
 end
 
-local function split_interval_by_end(start_num, end_num, split_points)
+local function split_interval_simple(start_num, end_num, split_points)
   local result = {}
   local points = {}
 
-  -- 收集所有有效的分割点（作为区间的结束）
+  -- 收集所有分割点
   for _, v in ipairs(split_points) do
-    if v >= start_num and v < end_num then
+    if v > start_num and v < end_num then
       table.insert(points, v)
     end
   end
@@ -67,16 +67,10 @@ local function split_interval_by_end(start_num, end_num, split_points)
   -- 构建区间对
   local current = start_num
   for _, point in ipairs(points) do
-    if current <= point then
-      table.insert(result, { current, point })
-      current = point + 1
-    end
+    table.insert(result, { current, point })
+    current = point
   end
-
-  -- 添加最后一个区间
-  if current <= end_num then
-    table.insert(result, { current, end_num })
-  end
+  table.insert(result, { current, end_num })
 
   return result
 end
@@ -84,7 +78,7 @@ end
 -- 等0.13更新
 local function set_multiline_virt_text2(bufnr, ns_id, line_num, s_idx, e_idx)
   local splitList = get_line_wrap_idx(bufnr, line_num)
-  local list = split_interval_by_end(s_idx, e_idx, splitList)
+  local list = split_interval_simple(s_idx, e_idx, splitList)
   for _, item in ipairs(list) do
     local text = vim.api.nvim_buf_get_text(bufnr, line_num, item[1] - 1, line_num, item[2], {})[1]
     local display_width = vim.api.nvim_strwidth(text)
