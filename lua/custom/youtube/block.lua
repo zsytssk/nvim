@@ -10,14 +10,12 @@
 ---@field type "sentence"
 ---@field time integer[]          -- 时间范围，可能只有一个元素
 ---@field group integer
----@field isImp boolean
 ---@field link string
 ---@field matchKeys integer[]|nil
 
 ---@alias BlockItem LinkItem|SentenceItem
 ---@alias Block table<integer, BlockItem>
 
----@type { hasIntersection: fun(t: table, other: table): boolean }
 local tb = require("libs.table")
 
 local M = {}
@@ -28,15 +26,6 @@ local function is_match_url(url)
 	local pattern = "https?://[%w%-%._~:/%?#%[%]@!$&'()*+,;=]+"
 	local match = string.match(url, pattern)
 	return match ~= nil
-end
-
----@param sentence string
----@return boolean
-local function is_match_imp(sentence)
-	if string.match(sentence, "^%* ") then
-		return true
-	end
-	return false
 end
 
 ---@param block table<any, any>
@@ -175,7 +164,6 @@ function M.get_block()
 			time = get_content_seconds(value),
 			group = group,
 			link = cur_link,
-			isImp = is_match_imp(value)
 		}
 		::continue::
 	end
@@ -267,37 +255,29 @@ end
 function M.find_imp(tbl, startKey, direction)
 	direction = direction or "next" -- 补上默认值
 
-	-- 收集所有 imp 键
-	local imp_keys = {}
-	for k, v in pairs(tbl) do
-		if v and v.isImp then
-			table.insert(imp_keys, k)
-		end
-	end
-	if #imp_keys == 0 then return nil end
-
-	table.sort(imp_keys)
-
-	if direction == "next" then
-		for _, k in ipairs(imp_keys) do
-			if k > startKey then
-				return k, tbl[k]
+	local pattern = "%[(.-)%]"
+	local arr1 = {}
+	local arr2 = {}
+	if direction == 'next' then
+		for key, value in pairs(tbl) do
+			if tonumber(key) <= tonumber(startKey) then
+				table.insert(arr1, value)
+			else
+				table.insert(arr2, value)
 			end
 		end
-		-- 没找到更大的，返回最小的（循环回来）
-		local k = imp_keys[1]
-		return k, tbl[k]
-	elseif direction == "prev" then
-		for i = #imp_keys, 1, -1 do
-			local k = imp_keys[i]
-			if k < startKey then
-				return k, tbl[k]
-			end
-		end
-		-- 没找到更小的，返回最大的（循环回来）
-		local k = imp_keys[#imp_keys]
-		return k, tbl[k]
 	end
+
+	local newArr = tb.mergeArrays(arr2, arr1)
+	for index, line_info in ipairs(newArr) do
+		if line_info.type ~= 'sentence' then
+			goto continue
+		end
+		local start_pos, end_pos = string.find(str, "%[(.-)%]", line_info.content)
+		::continue::
+	end
+
+	local start_pos, end_pos = string.find(str, pattern)
 
 	return nil
 end

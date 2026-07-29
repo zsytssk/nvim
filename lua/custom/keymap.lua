@@ -35,6 +35,7 @@ libs.keymapTable 'n' {
   ['<C-j>'] = { '<C-w>j', 'move to panel down' },
   ['<C-k>'] = { '<C-w>k', 'move to panel up' },
   ['<C-l>'] = { '<C-w>l', 'move to panel right' },
+
   ['<A-z>'] = {
     require('custom.utils').toggle_wrap,
     'toggle wrap',

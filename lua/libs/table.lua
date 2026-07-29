@@ -64,4 +64,15 @@ M.hasIntersection = function(a, b)
 
   return false
 end
+
+M.mergeArrays = function(...)
+  local result = {}
+  for _, arr in ipairs({ ... }) do
+    for i, v in ipairs(arr) do
+      table.insert(result, v)
+    end
+  end
+  return result
+end
+
 return M

@@ -1,5 +1,20 @@
 https://gitlab.com/thomas3081/nvim
 
+## 2026-07-24 14:09:07
+
+- nvim youtube 中文对位置的干扰
+  - 计算这一行的换行的位置
+  - 看换行位置在不在区间内
+  - 计算区间分割按idx，
+  - 计算每个分区要覆盖的字符
+
+我某一行有中文而且是wrap 因为这一行的最后一个空位无法放下中文，在neovim中显示一个`>`, 然后在下一行显示那个中文，但是我使用nvim_buf_set_extmark想覆盖那个中文时，如果start_p正好是那个中文的idx就显示在上一行，如果start_p+1就会在下一行的这个中文的下一个位置显示覆盖字符
+vim.api.nvim_buf_set_extmark(0, ns_id, line_num, start_p, {
+virt_text = { { display_text, "Normal" } },
+virt_text_pos = "overlay",
+virt_text_win_col = nil,
+})
+
 ## 2025-10-27 09:14:23
 
 lualine_a -> 改变状态 没有其他方法了吗
@@ -101,7 +116,7 @@ function triggerKeyEvent(
     metaKey: false,
     shiftKey: false,
     repeat: false,
-  }
+  },
 ) {
   var event = new KeyboardEvent("keydown", {
     keyCode: keyCode,
@@ -131,7 +146,6 @@ triggerKeyEvent(39); // after
 neovim 控制 youtube 先看看那个插件的问题
 
 - @ques neovim 快捷键做了转换 保存和和设置的 key 不一样
-
   - `<A-t>` -> `<M-t>`
   - `<C-t>` -> `<C-T>`
   - 默认的快捷键找不到 `gg`这种的
@@ -139,7 +153,6 @@ neovim 控制 youtube 先看看那个插件的问题
 - @ques 原来的 map 中的 options 怎么处理？
 
 - @ques
-
   - neovim 能不能自己搞一个 mode 来控制视频的播放？
     - https://github.com/Iron-E/nvim-libmodal/blob/master/lua/libmodal/Layer.lua
     - https://github.com/Iron-E/nvim-libmodal/tree/master/examples/lua
@@ -150,13 +163,11 @@ neovim 控制 youtube 先看看那个插件的问题
   - 两边的快捷键应该能同步
 
 - libmodal 经常不起作用。。。
-
   - 也许可以自己写一个
   - 只需要事件绑定就可以了
   - 绑定之前把之前的 key 记下来，后面删除自己的时候还原
 
 - @ques 如何给一个 buffer 绑定事件，然后再去掉
-
   - 监听当前 buffer 的修改
 
 - @ques js 能不能在网页上发布一个 快捷键

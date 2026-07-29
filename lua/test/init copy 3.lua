@@ -31,7 +31,7 @@ local function get_line_wrap_idx(bufnr, line_num)
       if width < win_width then
         prev_pos = prev_pos + win_width - width
       end
-      print(width, win_width)
+      print(vim.inspect({ width = width, win_width = win_width, prev_pos = prev_pos }))
       table.insert(list, prev_pos)
 
       line_start = char_pos
@@ -41,20 +41,19 @@ local function get_line_wrap_idx(bufnr, line_num)
         break
       end
     end
-
     width = local_width
   end
 
   return list
 end
 
-local function split_interval_simple(start_num, end_num, split_points)
+local function split_interval_by_end(start_num, end_num, split_points)
   local result = {}
   local points = {}
 
-  -- 收集所有分割点
+  -- 收集所有有效的分割点（作为区间的结束）
   for _, v in ipairs(split_points) do
-    if v > start_num and v < end_num then
+    if v >= start_num and v < end_num then
       table.insert(points, v)
     end
   end
@@ -75,19 +74,26 @@ local function split_interval_simple(start_num, end_num, split_points)
   -- 构建区间对
   local current = start_num
   for _, point in ipairs(points) do
-    table.insert(result, { current, point })
-    current = point
+    if current <= point then
+      table.insert(result, { current, point })
+      current = point + 1
+    end
   end
-  table.insert(result, { current, end_num })
+
+  -- 添加最后一个区间
+  if current <= end_num then
+    table.insert(result, { current, end_num })
+  end
 
   return result
 end
 
 -- 等0.13更新
 local function set_multiline_virt_text2(bufnr, ns_id, line_num, s_idx, e_idx)
-  local splitList = get_line_wrap_idx(bufnr, line_num)
-  local list = split_interval_simple(s_idx, e_idx, splitList)
-  for _, item in ipairs(list) do
+  local line_breaks_idx = get_line_wrap_idx(bufnr, line_num)
+  local split_list = split_interval_by_end(s_idx, e_idx, line_breaks_idx)
+  print(vim.inspect({ line_breaks_idx = line_breaks_idx, list = split_list }))
+  for _, item in ipairs(split_list) do
     local text = vim.api.nvim_buf_get_text(bufnr, line_num, item[1] - 1, line_num, item[2], {})[1]
     local display_width = vim.api.nvim_strwidth(text)
     local display_text = string.rep('*', display_width)
@@ -103,9 +109,12 @@ end
 local flag = false
 local ns_id = vim.api.nvim_create_namespace("test")
 local test = function()
-  vim.api.nvim_buf_clear_namespace(0, ns_id, 0, -1)
   flag = not flag
   local info = block.get_block()
+  if not flag then
+    vim.api.nvim_buf_clear_namespace(0, ns_id, 0, -1)
+    return
+  end
   for key, item in pairs(info) do
     if item.type ~= 'sentence' then goto continue end
 
@@ -141,15 +150,30 @@ end
 
 -- 使用
 
--- local test = function()
---   -- local text = '你好'
---   -- local total_chars = vim.fn.strchars(text)
+local test = function()
+  flag = not flag
+  if not flag then
+    vim.api.nvim_buf_clear_namespace(0, ns_id, 0, -1)
+    return
+  end
 
---   -- print(total_chars, vim.str_utfindex(text, 6), vim.str_byteindex(text, 2))
---   -- local result = split_interval_simple(2, 8, { 3, 5 })
---   local result = split_interval_simple(2, 10, { 3, 4, 8 })
---   print(vim.inspect(result))
--- end
+  local info = block.get_block()
+  for key, item in pairs(info) do
+    local line_num = tonumber(key) - 1
+    local start_p = 100
+    local end_p = 102
+    local text = vim.api.nvim_buf_get_text(0, line_num, start_p - 1, line_num, end_p, {})[1]
+    local display_width = vim.api.nvim_strwidth(text)
+    local display_text = string.rep('*', display_width)
+
+    print(vim.inspect({ text = text }))
+    vim.api.nvim_buf_set_extmark(0, ns_id, line_num, start_p - 1, {
+      virt_text = { { display_text, "Comment" } },
+      virt_text_pos = "overlay",
+      virt_text_repeat_linebreak = true
+    })
+  end
+end
 
 
 libs.keymapTable 'in' {

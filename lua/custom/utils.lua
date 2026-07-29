@@ -1,3 +1,5 @@
+local tb = require('libs.table')
+
 local M = {}
 
 M.insert_cur_time = function()
@@ -67,7 +69,7 @@ M.setTimeout = function(fn, time)
   end
 end
 
-M.toggle_qf = function ()
+M.toggle_qf = function()
   local windows = vim.fn.getwininfo()
   local qf_exists = false
   for _, win in pairs(windows) do
@@ -84,5 +86,14 @@ M.toggle_qf = function ()
     vim.cmd('copen')
   end
 end
+
+M.bind = function(fn, ...)
+  local bound_args = { ... }
+  return function(...)
+    local args = { ... }
+    return fn(tb.unpack(bound_args), tb.unpack(args))
+  end
+end
+
 
 return M
