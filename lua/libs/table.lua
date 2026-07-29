@@ -16,10 +16,8 @@ M.len = function(ta)
 end
 
 M.unpack = function(...)
-  if table.unpack ~= nil then
-    return table.unpack(...)
-  end
   ---@diagnostic disable-next-line: deprecated
+  unpack = table.unpack or unpack
   return unpack(...)
 end
 

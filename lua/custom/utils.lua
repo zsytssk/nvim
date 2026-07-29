@@ -87,13 +87,13 @@ M.toggle_qf = function()
   end
 end
 
+
 M.bind = function(fn, ...)
   local bound_args = { ... }
   return function(...)
     local args = { ... }
-    return fn(tb.unpack(bound_args), tb.unpack(args))
+    return fn(tb.unpack(tb.mergeArrays(bound_args, args)))
   end
 end
-
 
 return M

@@ -438,6 +438,7 @@ local mappings = {
     end, "video loop" },
     ["n"] = { utils.bind(yutils.jump_to_match, 'next'), "video loop" },
     ["N"] = { utils.bind(yutils.jump_to_match, 'prev'), "video loop" },
+    ["<M-j>"] = { video_loop, "video loop" },
     ["<M-r>"] = { youdao_pronounce, "youdao pronounce" },
     ["<M-s>"] = { yutils.word_to_qs, "grep word to quickfix" },
     ["<C-M-y>"] = { change_page_url, "change page url" },
