@@ -3,4 +3,4 @@ vim.opt.swapfile = false
 require 'custom.auto'
 require 'custom.setting'
 require 'custom.keymap'
--- require('custom.youtube').init()
+require('custom.jump_list').init()

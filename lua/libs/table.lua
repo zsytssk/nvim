@@ -73,4 +73,14 @@ M.mergeArrays = function(...)
   return result
 end
 
+M.clear_after = function(arr, idx)
+  local result = {}
+  local endIdx = math.min(idx, #arr)
+  for i = 0, endIdx do
+    table.insert(result, arr[i])
+  end
+  return result
+end
+
+
 return M

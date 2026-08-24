@@ -12,6 +12,8 @@ vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagn
 vim.api.nvim_set_keymap('i', '<C-Space>', '<nop>', { noremap = true, silent = true })
 
 libs.keymapTable 'int' {
+  ['<C-i>'] = { require('custom.jump_list').next, 'jump_list next' },
+  ['<C-o>'] = { require('custom.jump_list').prev, 'jump_list prev' },
   ['<A-q>'] = { require('custom.utils').toggle_qf, 'toggle youtube control' },
   ['<A-y>'] = { require('custom.youtube').toggle, 'toggle youtube control' },
   ['<C-S-i>'] = { require('custom.utils').insert_cur_time, 'insert time' },
