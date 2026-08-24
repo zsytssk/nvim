@@ -187,13 +187,13 @@ local copy_sentence = function()
     local line_num = vim.fn.line(".")
     local line_info = info[line_num]
     if line_info ~= nil and line_info.content then
-        local result = line_info.content:gsub("%[([^%]]*)%]", function(content)
-            -- 检查是否包含 |
-            if content:find("|") then
-                return content:match("([^|]+)|.*") -- 取 | 前面的部分
-            else
-                return content                     -- 没有 | 就返回内容（去掉括号）
-            end
+        local result = line_info.content:gsub("%[.-%]", "")
+        result = result:gsub("`([^`]-)`", function(inner)
+            -- 如果内部有 |，只取第一个 | 之前的部分
+            local chosen = inner:match("^([^|]+)") or inner
+            -- 去掉开头的非字母/数字符号（如 !、@、# 等）
+            chosen = chosen:gsub("^[^%w]+", "")
+            return chosen
         end)
         vim.fn.setreg("+", "先翻译，再详细解释: " .. result)
     end
@@ -321,9 +321,9 @@ local toggle_hide_words_all = function()
             goto continue
         end
         local start = 0
-        if not item.content:match("^[A-Za-z%[]") then
-            start = 2
-        end
+        -- if not item.content:match("^[A-Za-z%[]") then
+        --     start = 2
+        -- end
         local line = string.rep("*", vim.fn.strdisplaywidth(item.content))
         set_multiline_virt_text(0, ns_id, tonumber(key) - 1, line, "Normal", start)
         ::continue::
@@ -341,7 +341,8 @@ local toggle_hide_words = function()
         local content = item.content
         local row = tonumber(key) - 1
         local ranges = {}
-        local start = content:match("^[A-Za-z%[]") and 1 or 3
+        local start = 1
+        -- local start = content:match("^[A-Za-z%[]") and 1 or 3
 
         for s, _, e in content:gmatch("()%[(.-)%]()") do
             if flag then
@@ -434,7 +435,8 @@ local mappings = {
         vim.cmd('/`[^`]*`')
     end, "video loop" },
     ["<M-S-N>"] = { function()
-        vim.cmd('/\\[[^\\]]*\\]')
+        -- vim.cmd('/\\[[^\\]]*\\]')
+        vim.cmd('/`\\![^`]*`')
     end, "video loop" },
     ["n"] = { utils.bind(yutils.jump_to_match, 'next'), "video loop" },
     ["N"] = { utils.bind(yutils.jump_to_match, 'prev'), "video loop" },

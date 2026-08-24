@@ -45,4 +45,8 @@ return {
       }
     end,
   },
+  {
+    'suliatis/Jumppack.nvim',
+    config = true,
+  }
 }
