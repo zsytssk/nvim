@@ -1,25 +1,37 @@
 local tb = require 'libs.table'
 
--- lua/cursor-tracker/init.lua
 local M = {}
 
 -- 历史记录存储：每个条目包含文件名、行号、列号和时间戳
 local history = {}
-local max_history = 100 -- 最大记录条数
-local jump_space = 5
+local max_history = 100
+local jump_space = 10
 local curIndex
 M._skip_next = false
+
+local function isCurFile(item)
+    if item == nil then
+        return
+    end
+    local bufnr = vim.api.nvim_get_current_buf()
+    local filename = vim.api.nvim_buf_get_name(bufnr)
+    return item.file == filename
+end
 
 M.track_cursor = function()
     if M._skip_next then
         return
     end
-    local pos = vim.api.nvim_win_get_cursor(0) -- 获取当前窗口光标位置
+    local pos = vim.api.nvim_win_get_cursor(0)
     local bufnr = vim.api.nvim_get_current_buf()
     local filename = vim.api.nvim_buf_get_name(bufnr)
     local curLine = pos[1]
-    local lastItem = table[#table]
-    if (lastItem and math.abs(lastItem.line - curLine) <= jump_space) then
+    local lastItem = history[#history]
+    if filename == '' then
+        return
+    end
+
+    if (filename == '' and isCurFile(lastItem) and math.abs(lastItem.line - curLine) <= jump_space) then
         return
     end
 
@@ -36,9 +48,6 @@ M.track_cursor = function()
         col = pos[2],
     })
 
-    -- print(vim.inspect(history))
-
-    -- 保持历史记录不超过最大长度
     if #history > max_history then
         table.remove(history, 1)
     end
@@ -57,8 +66,9 @@ M.prev = function()
     end, 10)
 
     if vim.api.nvim_buf_is_valid(prevItem.bufnr) then
-        -- vim.api.nvim_set_current_buf(prevItem.bufnr)
-        vim.cmd("edit " .. prevItem.file)
+        if not isCurFile(prevItem) then
+            vim.cmd("edit " .. prevItem.file)
+        end
 
         vim.api.nvim_win_set_cursor(0, { prevItem.line, prevItem.col })
     else
@@ -80,8 +90,9 @@ M.next = function()
     end, 10)
 
     if vim.api.nvim_buf_is_valid(nextItem.bufnr) then
-        -- vim.api.nvim_set_current_buf(nextItem.bufnr)
-        vim.cmd("edit " .. nextItem.file)
+        if not isCurFile(nextItem) then
+            vim.cmd("edit " .. nextItem.file)
+        end
         vim.api.nvim_win_set_cursor(0, { nextItem.line, nextItem.col })
         curIndex = nextIdx
         return
@@ -91,9 +102,9 @@ end
 
 -- 创建自动命令
 M.init = function()
-    local augroup = vim.api.nvim_create_augroup("CursorTracker", { clear = true })
+    local autoGroup = vim.api.nvim_create_augroup("CursorTracker", { clear = true })
     vim.api.nvim_create_autocmd("CursorMoved", {
-        group = augroup,
+        group = autoGroup,
         callback = M.track_cursor,
         desc = "Track cursor position changes"
     })
