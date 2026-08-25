@@ -71,14 +71,20 @@ M.prev = function()
         M._skip_next = false
     end, 100)
     if vim.api.nvim_buf_is_valid(prevItem.bufnr) then
-        if vim.api.nvim_win_get_position(prevItem.winid) then
+        local win_is_valid = false
+        if vim.api.nvim_win_is_valid(prevItem.winid) then
+            win_is_valid = true
             vim.api.nvim_set_current_win(prevItem.winid)
         end
         vim.schedule(function()
             if not isCurFile(prevItem) then
                 vim.cmd("edit " .. prevItem.file)
             end
-            vim.api.nvim_win_set_cursor(prevItem.winid, { prevItem.line, prevItem.col })
+            if win_is_valid then
+                vim.api.nvim_win_set_cursor(prevItem.winid, { prevItem.line, prevItem.col })
+            else
+                vim.api.nvim_win_set_cursor(0, { prevItem.line, prevItem.col })
+            end
         end)
     else
         table.remove(history, prevIdx)
@@ -99,14 +105,20 @@ M.next = function()
     end, 100)
 
     if vim.api.nvim_buf_is_valid(nextItem.bufnr) then
-        if vim.api.nvim_win_get_position(nextItem.winid) then
+        local win_is_valid = false
+        if vim.api.nvim_win_is_valid(nextItem.winid) then
             vim.api.nvim_set_current_win(nextItem.winid)
+            win_is_valid = true
         end
         vim.schedule(function()
             if not isCurFile(nextItem) then
                 vim.cmd("edit " .. nextItem.file)
             end
-            vim.api.nvim_win_set_cursor(nextItem.winid, { nextItem.line, nextItem.col })
+            if win_is_valid then
+                vim.api.nvim_win_set_cursor(nextItem.winid, { nextItem.line, nextItem.col })
+            else
+                vim.api.nvim_win_set_cursor(0, { nextItem.line, nextItem.col })
+            end
         end)
         curIndex = nextIdx
         return
@@ -115,23 +127,9 @@ M.next = function()
 end
 
 M.switch_panel_prev = function()
-    -- local curIdx = (curIndex or #history)
-    -- local curItem = history[curIdx]
-    -- print(vim.inspect(curItem))
-    -- M._skip_next = true
-    -- vim.defer_fn(function()
-    --     M._skip_next = false
-    -- end, 10)
     win_switch.prev()
 end
 M.switch_panel_next = function()
-    -- local curIdx = (curIndex or #history)
-    -- local curItem = history[curIdx]
-    -- print(vim.inspect(curItem))
-    -- M._skip_next = true
-    -- vim.defer_fn(function()
-    --     M._skip_next = false
-    -- end, 10)
     win_switch.next()
 end
 
