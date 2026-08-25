@@ -1,4 +1,5 @@
 local tb = require 'libs.table'
+local win_switch = require 'custom.jump_list.win_switch'
 
 local M = {}
 
@@ -13,15 +14,18 @@ local function isCurFile(item)
     if item == nil then
         return
     end
+    local winid = vim.api.nvim_get_current_win()
+
     local bufnr = vim.api.nvim_get_current_buf()
     local filename = vim.api.nvim_buf_get_name(bufnr)
-    return item.file == filename
+    return item.file == filename and winid == item.winid
 end
 
 M.track_cursor = function()
     if M._skip_next then
         return
     end
+    local winid = vim.api.nvim_get_current_win()
     local pos = vim.api.nvim_win_get_cursor(0)
     local bufnr = vim.api.nvim_get_current_buf()
     local filename = vim.api.nvim_buf_get_name(bufnr)
@@ -31,7 +35,8 @@ M.track_cursor = function()
         return
     end
 
-    if (filename == '' and isCurFile(lastItem) and math.abs(lastItem.line - curLine) <= jump_space) then
+    if (isCurFile(lastItem) and math.abs(lastItem.line - curLine) <= jump_space) then
+        lastItem.line = curLine
         return
     end
 
@@ -42,6 +47,7 @@ M.track_cursor = function()
 
     -- 添加到历史记录
     table.insert(history, {
+        winid = winid,
         bufnr = bufnr,
         file = filename,
         line = curLine,
@@ -63,14 +69,17 @@ M.prev = function()
     M._skip_next = true
     vim.defer_fn(function()
         M._skip_next = false
-    end, 10)
-
+    end, 100)
     if vim.api.nvim_buf_is_valid(prevItem.bufnr) then
-        if not isCurFile(prevItem) then
-            vim.cmd("edit " .. prevItem.file)
+        if vim.api.nvim_win_get_position(prevItem.winid) then
+            vim.api.nvim_set_current_win(prevItem.winid)
         end
-
-        vim.api.nvim_win_set_cursor(0, { prevItem.line, prevItem.col })
+        vim.schedule(function()
+            if not isCurFile(prevItem) then
+                vim.cmd("edit " .. prevItem.file)
+            end
+            vim.api.nvim_win_set_cursor(prevItem.winid, { prevItem.line, prevItem.col })
+        end)
     else
         table.remove(history, prevIdx)
     end
@@ -87,17 +96,43 @@ M.next = function()
     M._skip_next = true
     vim.defer_fn(function()
         M._skip_next = false
-    end, 10)
+    end, 100)
 
     if vim.api.nvim_buf_is_valid(nextItem.bufnr) then
-        if not isCurFile(nextItem) then
-            vim.cmd("edit " .. nextItem.file)
+        if vim.api.nvim_win_get_position(nextItem.winid) then
+            vim.api.nvim_set_current_win(nextItem.winid)
         end
-        vim.api.nvim_win_set_cursor(0, { nextItem.line, nextItem.col })
+        vim.schedule(function()
+            if not isCurFile(nextItem) then
+                vim.cmd("edit " .. nextItem.file)
+            end
+            vim.api.nvim_win_set_cursor(nextItem.winid, { nextItem.line, nextItem.col })
+        end)
         curIndex = nextIdx
         return
     end
     table.remove(history, nextIdx)
+end
+
+M.switch_panel_prev = function()
+    -- local curIdx = (curIndex or #history)
+    -- local curItem = history[curIdx]
+    -- print(vim.inspect(curItem))
+    -- M._skip_next = true
+    -- vim.defer_fn(function()
+    --     M._skip_next = false
+    -- end, 10)
+    win_switch.prev()
+end
+M.switch_panel_next = function()
+    -- local curIdx = (curIndex or #history)
+    -- local curItem = history[curIdx]
+    -- print(vim.inspect(curItem))
+    -- M._skip_next = true
+    -- vim.defer_fn(function()
+    --     M._skip_next = false
+    -- end, 10)
+    win_switch.next()
 end
 
 -- 创建自动命令
