@@ -73,6 +73,16 @@ M.mergeArrays = function(...)
   return result
 end
 
+M.filter = function(arr, fn)
+  local result = {}
+  for _, item in ipairs(arr) do
+    if fn(item) then
+      table.insert(result, item)
+    end
+  end
+  return result
+end
+
 M.clear_after = function(arr, idx)
   local result = {}
   local endIdx = math.min(idx, #arr)

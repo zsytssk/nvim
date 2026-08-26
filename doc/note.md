@@ -1,5 +1,10 @@
 https://gitlab.com/thomas3081/nvim
 
+## 2026-08-25 17:29:26
+
+- 自己写一个nvim跳转的功能 -> switch_panel
+  - 我要用一个按键 按照从下到上左 从右到左的顺序切换
+
 ## 2026-07-24 14:09:07
 
 - nvim youtube 中文对位置的干扰

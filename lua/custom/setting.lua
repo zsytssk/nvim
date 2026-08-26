@@ -37,6 +37,10 @@ vim.o.termguicolors = true
 vim.opt.hlsearch = true
 vim.opt.incsearch = true
 
+vim.opt.splitright = true
+vim.opt.splitbelow = true
+
+
 vim.g.clipboard = {
   name = 'wl-clipboard',
   copy = {

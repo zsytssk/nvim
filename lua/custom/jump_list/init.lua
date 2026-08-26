@@ -21,6 +21,17 @@ local function isCurFile(item)
     return item.file == filename and winid == item.winid
 end
 
+M.on_window_close = function(args)
+    local closed_win_id = tonumber(args.match)
+    local old_len = #history
+    history = tb.filter(history, function(item)
+        return item.winid ~= closed_win_id
+    end)
+    if old_len > #history then
+        curIndex = nil
+    end
+end
+
 M.track_cursor = function()
     if M._skip_next then
         return
@@ -36,7 +47,7 @@ M.track_cursor = function()
     end
 
     if (isCurFile(lastItem) and math.abs(lastItem.line - curLine) <= jump_space) then
-        lastItem.line = curLine
+        -- lastItem.line = curLine
         return
     end
 
@@ -141,6 +152,10 @@ M.init = function()
         callback = M.track_cursor,
         desc = "Track cursor position changes"
     })
+    vim.api.nvim_create_autocmd("WinClosed", {
+        callback = M.on_window_close,
+    })
+
     M.track_cursor()
 end
 
