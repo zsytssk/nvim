@@ -44,16 +44,16 @@ M.track_cursor = function()
         return
     end
 
-    local curLine = pos[1]
-    local lastItem = history[#history]
-    if (isCurFile(lastItem) and math.abs(lastItem.line - curLine) <= jump_space) then
-        -- lastItem.line = curLine
-        return
-    end
-
     if curIndex then
         history = tb.clear_after(history, curIndex)
         curIndex = nil
+    end
+
+    local curLine = pos[1]
+    local lastItem = history[#history]
+    if (isCurFile(lastItem) and math.abs(lastItem.oriLine - curLine) <= jump_space) then
+        lastItem.line = curLine
+        return
     end
 
     -- 添加到历史记录
@@ -62,6 +62,7 @@ M.track_cursor = function()
         bufnr = bufnr,
         file = filename,
         line = curLine,
+        oriLine = curLine,
         col = pos[2],
     })
 

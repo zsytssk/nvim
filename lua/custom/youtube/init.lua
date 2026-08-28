@@ -181,7 +181,7 @@ local toggle_pause_all = function()
     emit_event("toggle_pause", '')
 end
 
-local copy_sentence = function()
+local copy_sentence = function(type)
     showStatus("️📋")
     local info = block.get_block()
     local line_num = vim.fn.line(".")
@@ -195,7 +195,11 @@ local copy_sentence = function()
             chosen = chosen:gsub("^[^%w]+", "")
             return chosen
         end)
-        vim.fn.setreg("+", "先翻译，再详细解释: " .. result)
+        if type then
+            vim.fn.setreg("+", "语法问题: " .. result)
+        else
+            vim.fn.setreg("+", "先翻译，再详细解释: " .. result)
+        end
     end
 end
 
@@ -429,7 +433,7 @@ local youdao_pronounce = function()
 end
 
 local M = {}
-
+local bind = utils.bind
 local mappings = {
     ["<M-n>"] = { function()
         vim.cmd('/`[^`]*`')
@@ -438,8 +442,8 @@ local mappings = {
         -- vim.cmd('/\\[[^\\]]*\\]')
         vim.cmd('/`\\![^`]*`')
     end, "video loop" },
-    ["n"] = { utils.bind(yutils.jump_to_match, 'next'), "video loop" },
-    ["N"] = { utils.bind(yutils.jump_to_match, 'prev'), "video loop" },
+    ["n"] = { bind(yutils.jump_to_match, 'next'), "video loop" },
+    ["N"] = { bind(yutils.jump_to_match, 'prev'), "video loop" },
     ["<M-j>"] = { video_loop, "video loop" },
     ["<M-r>"] = { youdao_pronounce, "youdao pronounce" },
     ["<M-s>"] = { yutils.word_to_qs, "grep word to quickfix" },
@@ -449,10 +453,10 @@ local mappings = {
     ["<C-M-t>"] = { toggle_hide_words_all, "toggle hide words" },
     -- ["<C-M-y>"] = { test, "youtube test" },
     ["<M-k>"] = { sentence_jump, "sentence jump" },
-    ["<C-S-M-j>"] = { utils.bind(video_list_loop, 'start'), "video list loop" },
-    ["<C-S-M-k>"] = { utils.bind(video_list_loop, 'current'), "video list loop from", },
+    ["<C-S-M-j>"] = { bind(video_list_loop, 'start'), "video list loop" },
+    ["<C-S-M-k>"] = { bind(video_list_loop, 'current'), "video list loop from", },
     ["<C-M-j>"] = { jump_imp, "video loop" },
-    ["<C-M-k>"] = { utils.bind(jump_imp, 'prev'), "video loop" },
+    ["<C-M-k>"] = { bind(jump_imp, 'prev'), "video loop" },
     ["<M-Space>"] = { toggle_pause, "(un)pause" },
     ["<C-M-Space>"] = { toggle_pause_all, "(un)pause" },
     -- ['K'] = { toggle_pause, { buffer = true, desc = '(un)pause' } },
@@ -462,17 +466,18 @@ local mappings = {
     ["J"] = { play_back, "play back" },
     ["L"] = { play_forward, "play forward" },
     -- ["<C-C>"] = { copy_time, "copy time" },
-    ["<C-S-M-c>"] = { copy_imp_words, "copy imp words" },
+    -- ["<C-S-M-c>"] = { copy_imp_words, "copy imp words" },
     ["<C-S-M-v>"] = { copy_url, "copy imp words" },
-    ["<C-M-C>"] = { copy_sentence, "copy time" },
+    ["<C-M-C>"] = { copy_sentence, "copy" },
+    ["<C-S-M-C>"] = { bind(copy_sentence, 1), "copy time" },
     ["<C-V>"] = { paste_time, "paste time" },
     ["<C-M-V>"] = { paste_end_time, "paste end time" },
-    ["<M-Up>"] = { utils.bind(switch_time, 'start', 1), "add start time", },
-    ["<M-Down>"] = { utils.bind(switch_time, 'start', -1), "reduce start time", },
-    ["<C-M-Up>"] = { utils.bind(switch_time, 'end', 1), "add end time", },
-    ["<C-M-Down>"] = { utils.bind(switch_time, 'end', -1), "add end time", },
-    ["<M-Left>"] = { utils.bind(switch_history, 'prev'), "add start time", },
-    ["<M-right>"] = { utils.bind(switch_history, 'next'), "reduce start time", },
+    ["<M-Up>"] = { bind(switch_time, 'start', 1), "add start time", },
+    ["<M-Down>"] = { bind(switch_time, 'start', -1), "reduce start time", },
+    ["<C-M-Up>"] = { bind(switch_time, 'end', 1), "add end time", },
+    ["<C-M-Down>"] = { bind(switch_time, 'end', -1), "add end time", },
+    ["<M-Left>"] = { bind(switch_history, 'prev'), "add start time", },
+    ["<M-right>"] = { bind(switch_history, 'next'), "reduce start time", },
 }
 
 mode = Mode:new(function()
