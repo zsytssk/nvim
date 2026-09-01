@@ -1,5 +1,9 @@
 https://gitlab.com/thomas3081/nvim
 
+## 2026-09-01 16:03:59
+
+telescope 切换搜索模式
+
 ## 2026-08-25 17:29:26
 
 - 自己写一个nvim跳转的功能 -> switch_panel

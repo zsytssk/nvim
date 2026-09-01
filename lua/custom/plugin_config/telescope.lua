@@ -1,3 +1,5 @@
+local tb = require("libs.table")
+
 local M = {}
 
 M.init = function()
@@ -76,10 +78,44 @@ M.init = function()
     }
   end
 
-  local function telescope_live_grep()
+  local isRegex = false
+  local isCurFolder = false
+  local function telescope_live_grep(prompt, curFolder)
     local conf = require('telescope.config').values
+    local localConfig = vim.list_extend({}, conf.vimgrep_arguments)
+    if isRegex then
+      tb.remove_by_value(localConfig, '--fixed-strings')
+    else
+      table.insert(localConfig, '--fixed-strings')
+    end
+
+    if not curFolder then
+      curFolder = vim.fn.expand('%:p:h')
+    end
     require('telescope.builtin').live_grep {
-      vimgrep_arguments = table.insert(conf.vimgrep_arguments, '--fixed-strings'),
+      vimgrep_arguments = localConfig,
+      default_text = prompt or "",
+      cwd = isCurFolder and curFolder or nil,
+      attach_mappings = function(prompt_bufnr, map)
+        -- 定义切换函数
+        local function toggle_fixed_strings()
+          local prompt = require('telescope.actions.state').get_current_line()
+          isRegex = not isRegex
+          telescope_live_grep(prompt, curFolder)
+        end
+        local function toggle_folder()
+          local prompt = require('telescope.actions.state').get_current_line()
+          isCurFolder = not isCurFolder
+          telescope_live_grep(prompt, curFolder)
+        end
+        -- 绑定快捷键，比如 <C-f>
+        map('i', '<C-f>', toggle_folder)
+        map('n', '<C-f>', toggle_folder)
+        map('i', '<C-b>', toggle_fixed_strings)
+        map('n', '<C-b>', toggle_fixed_strings)
+
+        return true
+      end,
     }
   end
 

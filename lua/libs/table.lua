@@ -93,4 +93,15 @@ M.clear_after = function(arr, idx)
 end
 
 
+M.remove_by_value = function(arr, value)
+  local remove = false
+  for i = #arr, 1, -1 do
+    if arr[i] == value then
+      table.remove(arr, i)
+      remove = true
+    end
+  end
+  return remove
+end
+
 return M
