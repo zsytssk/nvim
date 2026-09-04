@@ -439,8 +439,10 @@ local mappings = {
         vim.cmd('/`[^`]*`')
     end, "video loop" },
     ["<M-S-N>"] = { function()
-        -- vim.cmd('/\\[[^\\]]*\\]')
         vim.cmd('/`\\![^`]*`')
+    end, "video loop" },
+    ["<C-M-S-N>"] = { function()
+        vim.cmd('/`?[^`]*`')
     end, "video loop" },
     ["n"] = { bind(yutils.jump_to_match, 'next'), "video loop" },
     ["N"] = { bind(yutils.jump_to_match, 'prev'), "video loop" },
