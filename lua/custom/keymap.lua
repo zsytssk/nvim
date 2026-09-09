@@ -11,6 +11,9 @@ vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagn
 -- 禁用 Insert 模式下的 Ctrl+Space
 vim.api.nvim_set_keymap('i', '<C-Space>', '<nop>', { noremap = true, silent = true })
 
+libs.keymapTable 'intv' {
+  ['<M-r>'] = { require('custom.youtube').youdao_pronounce, 'youdao pronounce' },
+}
 libs.keymapTable 'int' {
   ['<C-i>'] = { require('custom.jump_list').next, 'jump_list next' },
   ['<C-o>'] = { require('custom.jump_list').prev, 'jump_list prev' },
@@ -22,7 +25,6 @@ libs.keymapTable 'int' {
   ['<A-S-`>'] = { require('custom.utils').open_external_term, 'open external terminal' },
   ['<C-`>'] = { require('custom.plugin_config.toggleterm').toggle_terminal, 'toggle terminal' },
   ['<C-s>'] = { '<cmd> w <CR>', 'save file' },
-  -- ['<C-q>'] = { require('custom.utils').toggle_qf, 'save file' },
 }
 
 libs.keymapTable 'n' {
@@ -39,7 +41,6 @@ libs.keymapTable 'n' {
   ['<C-j>'] = { '<C-w>j', 'move to panel down' },
   ['<C-k>'] = { '<C-w>k', 'move to panel up' },
   ['<C-l>'] = { '<C-w>l', 'move to panel right' },
-
   ['<A-z>'] = {
     require('custom.utils').toggle_wrap,
     'toggle wrap',

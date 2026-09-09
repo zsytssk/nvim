@@ -427,8 +427,36 @@ local change_page_url = function()
     emit_event("change_page_url", link, nil)
 end
 
+local function get_visual_selection()
+    -- 1. 暂存当前寄存器 "a" 的内容和类型，避免污染用户的剪贴板
+    local old_reg = vim.fn.getreg('a')
+    local old_regtype = vim.fn.getregtype('a')
+
+    -- 2. 执行 yank (复制) 操作，将选中文本存入寄存器 "a"
+    -- gv 保持选区，"ay 将选区复制到寄存器 a
+    vim.cmd('noau normal! "ay')
+
+    -- 3. 取出寄存器 "a" 中的文本
+    local selection = vim.fn.getreg('a')
+
+    -- 4. 恢复寄存器 "a" 原本的内容和类型
+    vim.fn.setreg('a', old_reg, old_regtype)
+
+    return selection
+end
+
 local youdao_pronounce = function()
     local word = vim.fn.expand('<cword>')
+    local mode = vim.fn.mode()
+
+    if mode == 'v' or mode == 'V' or mode == '\22' then -- '\22' 是 Ctrl-V（块选）的转义
+        word = get_visual_selection()
+    end
+    if word then
+        word = word:gsub('^[!|%s]+', ''):gsub('[!|%s]+$', '')
+    end
+
+    print(mode, word)
     emit_event_youdao(word)
 end
 
@@ -447,7 +475,6 @@ local mappings = {
     ["n"] = { bind(yutils.jump_to_match, 'next'), "video loop" },
     ["N"] = { bind(yutils.jump_to_match, 'prev'), "video loop" },
     ["<M-j>"] = { video_loop, "video loop" },
-    ["<M-r>"] = { youdao_pronounce, "youdao pronounce" },
     ["<M-s>"] = { yutils.word_to_qs, "grep word to quickfix" },
     ["<C-M-y>"] = { change_page_url, "change page url" },
     -- ["<C-M-j>"] = { video_jump, "video jump" },
@@ -495,5 +522,7 @@ M.toggle = function()
         mode:enter()
     end
 end
+
+M.youdao_pronounce = youdao_pronounce
 
 return M
