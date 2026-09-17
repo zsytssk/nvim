@@ -455,8 +455,6 @@ local youdao_pronounce = function()
     if word then
         word = word:gsub('^[!|%s]+', ''):gsub('[!|%s]+$', '')
     end
-
-    print(mode, word)
     emit_event_youdao(word)
 end
 
