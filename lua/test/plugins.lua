@@ -45,4 +45,13 @@ return {
       }
     end,
   },
+  {
+    'sindrets/diffview.nvim',
+    event = 'VeryLazy',
+    version = '*',
+    config = function()
+      require('diffview').setup {}
+    end,
+  },
+
 }
